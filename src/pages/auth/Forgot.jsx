@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Forgot() {
     return (
         <div className="space-y-6 text-center">
@@ -22,9 +24,9 @@ export default function Forgot() {
                 </button>
             </form>
             
-            <a href="/login" className="inline-block text-sm font-semibold text-blue-600 hover:text-blue-800">
+            <Link to="/login" className="inline-block text-sm font-semibold text-blue-600 hover:text-blue-800">
                 ← Kembali ke Login
-            </a>
+            </Link>
         </div>
     )
 }

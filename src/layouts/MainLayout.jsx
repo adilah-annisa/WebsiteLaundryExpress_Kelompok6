@@ -1,7 +1,7 @@
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { Outlet } from "react-router-dom";
-import '../assets/tailwind.css';
+import '../DashboardAdmin/assets/tailwind.css';
 
 export default function MainLayout() {
   return (
