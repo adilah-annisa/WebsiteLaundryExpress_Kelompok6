@@ -31,6 +31,7 @@
   ],
   "orders": [
     {
+      "seri": "#00001",
       "name": "Ahmad Rizky",
       "address": "Jl. Mawar No. 12, Jakarta",
       "date": "15 Jan 2025",
@@ -38,6 +39,7 @@
       "status": "Selesai"
     },
     {
+      "seri": "#00002",
       "name": "Siti Aminah",
       "address": "Jl. Melati No. 45, Bandung",
       "date": "15 Jan 2025",
@@ -45,13 +47,15 @@
       "status": "Diproses"
     },
     {
+      "seri": "#00003",
       "name": "Budi Santoso",
       "address": "Jl. Anggrek No. 8, Surabaya",
       "date": "14 Jan 2025",
       "time": "10:15",
-      "status": "Dikirim"
+      "status": "Diantar"
     },
     {
+      "seri": "#00004",
       "name": "Dewi Lestari",
       "address": "Jl. Kenanga No. 22, Yogyakarta",
       "date": "14 Jan 2025",
@@ -59,19 +63,102 @@
       "status": "Selesai"
     },
     {
+      "seri": "#00005",
       "name": "Eko Prasetyo",
       "address": "Jl. Cempaka No. 17, Semarang",
       "date": "13 Jan 2025",
       "time": "13:45",
-      "status": "Cancel"
+      "status": "Diproses"
     },
     {
+      "seri": "#00006",
       "name": "Rina Wulandari",
       "address": "Jl. Dahlia No. 5, Malang",
       "date": "13 Jan 2025",
       "time": "14:20",
       "status": "Diproses"
     }
+  ],
+  "history": [
+    {
+      "seri": "#00001",
+      "name": "Ahmad Rizky",
+      "address": "Jl. Mawar No. 12, Jakarta",
+      "date": "15 Jan 2025",
+      "bukti": "bukti1.jpg",
+      "status": "Selesai"
+    },
+    {
+      "seri": "#00007",
+      "name": "Fajar Nugroho",
+      "address": "Jl. Sunflower No. 3",
+      "date": "12 Jan 2025",
+      "bukti": "bukti2.jpg",
+      "status": "Diproses"
+    },
+    {
+      "seri": "#00008",
+      "name": "Larasati",
+      "address": "Jl. Melati 2",
+      "date": "11 Jan 2025",
+      "bukti": "bukti3.jpg",
+      "status": "Selesai"
+    }
+  ],
+  "schedule": [
+    {
+      "seri": "#00001",
+      "name": "Ahmad Rizky",
+      "date": "15 Jan 2025",
+      "berat": "5.2 kg",
+      "titik": "75%",
+      "status": "Selesai"
+    },
+    {
+      "seri": "#00008",
+      "name": "Larasati",
+      "date": "16 Jan 2025",
+      "berat": "3.8 kg",
+      "titik": "40%",
+      "status": "Diproses"
+    },
+    {
+      "seri": "#00009",
+      "name": "Bambang",
+      "date": "17 Jan 2025",
+      "berat": "7.1 kg",
+      "titik": "20%",
+      "status": "Dijemput"
+    }
+  ],
+  "statusSample": {
+    "seri": "#00001",
+    "name": "Ahmad Rizky",
+    "progress": "Diproses",
+    "image": "/assets/bukti1.jpg",
+    "date": "15 Jan 2025 08:00"
+  },
+  "customers": [
+    {
+      "id": "C001",
+      "name": "Ahmad Rizky",
+      "address": "Jl. Mawar No. 12, Jakarta",
+      "phone": "081234567890",
+      "email": "ahmad@example.com"
+    },
+    {
+      "id": "C002",
+      "name": "Siti Aminah",
+      "address": "Jl. Melati No. 45, Bandung",
+      "phone": "081234567891",
+      "email": "siti@example.com"
+    },
+    {
+      "id": "C003",
+      "name": "Budi Santoso",
+      "address": "Jl. Anggrek No. 8, Surabaya",
+      "phone": "081234567892",
+      "email": "budi@example.com"
+    }
   ]
 }
-

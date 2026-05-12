@@ -4,7 +4,8 @@ import {
   IoTimeOutline,
   IoCloseCircleOutline,
 } from "react-icons/io5";
-import dashboardData from "../data/dashboardData.json";
+import dashboardData from "../DashboardAdmin/data/dashboardData.json";
+import StatusBadge from "../DashboardAdmin/components/StatusBadge";
 
 const iconMap = {
   IoShirtOutline,
@@ -13,19 +14,11 @@ const iconMap = {
   IoCloseCircleOutline,
 };
 
-const statusStyles = {
-  Selesai: "bg-green-100 text-green-600",
-  Diproses: "bg-yellow-100 text-yellow-600",
-  Dikirim: "bg-blue-100 text-blue-600",
-  Cancel: "bg-red-100 text-red-600",
-};
-
 export default function Dashboard() {
   const { stats, orders } = dashboardData;
 
   return (
     <div className="space-y-8">
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = iconMap[stat.iconName];
@@ -52,12 +45,9 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Orders Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-inter-semibold text-lg text-gray-800">
-            Pesanan Terbaru
-          </h2>
+          <h2 className="font-inter-semibold text-lg text-gray-800">Pesanan Terbaru</h2>
           <button className="text-sm text-[#3b6fd8] font-inter-medium hover:underline">
             Lihat Semua
           </button>
@@ -66,6 +56,9 @@ export default function Dashboard() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/50">
+                <th className="text-left px-6 py-4 text-xs font-inter-semibold text-gray-600 uppercase tracking-wider">
+                  Seri
+                </th>
                 <th className="text-left px-6 py-4 text-xs font-inter-semibold text-gray-600 uppercase tracking-wider">
                   Nama Pelanggan
                 </th>
@@ -85,10 +78,10 @@ export default function Dashboard() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {orders.map((order, index) => (
-                <tr
-                  key={index}
-                  className="hover:bg-gray-50/50 transition-colors"
-                >
+                <tr key={index} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-inter-medium text-gray-800">
+                    {order.seri}
+                  </td>
                   <td className="px-6 py-4 text-sm font-inter-medium text-gray-800">
                     {order.name}
                   </td>
@@ -102,11 +95,7 @@ export default function Dashboard() {
                     {order.time}
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex px-3 py-1 rounded-full text-xs font-inter-semibold ${statusStyles[order.status]}`}
-                    >
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} />
                   </td>
                 </tr>
               ))}
@@ -117,4 +106,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
