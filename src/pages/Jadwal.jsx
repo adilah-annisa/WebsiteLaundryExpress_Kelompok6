@@ -24,7 +24,7 @@ export default function Jadwal() {
   const [schedule, setSchedule] = useState(scheduleData);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
-  const [driver, setDriver] = useState('Samsont');
+  const [kurir, setKurir] = useState('Samsont');
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState('');
 
@@ -77,10 +77,10 @@ export default function Jadwal() {
             />
           </div>
           <div>
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Driver</label>
+            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Kurir</label>
             <select
-              value={driver}
-              onChange={(e) => setDriver(e.target.value)}
+              value={kurir}
+              onChange={(e) => setKurir(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter bg-white shadow-sm"
             >
               <option>Samsont</option>

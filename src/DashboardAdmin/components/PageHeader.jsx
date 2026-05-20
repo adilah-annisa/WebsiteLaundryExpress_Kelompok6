@@ -24,10 +24,6 @@ export default function PageHeader({
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-      <div>
-        <h1 className="font-inter-semibold text-2xl text-gray-800">{title}</h1>
-        <p className="text-sm text-gray-500 mt-1 font-poppins">Kelola data {title.toLowerCase()}</p>
-      </div>
       
       {showSearch && (
         <div className="relative w-full sm:w-80">
