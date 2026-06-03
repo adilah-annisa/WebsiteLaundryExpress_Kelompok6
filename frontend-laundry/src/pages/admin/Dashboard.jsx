@@ -4,8 +4,9 @@ import {
   IoTimeOutline,
   IoCloseCircleOutline,
 } from "react-icons/io5";
-import dashboardData from "../DashboardAdmin/data/dashboardData.json";
-import StatusBadge from "../DashboardAdmin/components/StatusBadge";
+import dashboardData from "../../DashboardAdmin/data/dashboardData.json";
+import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
+import { Link } from "react-router-dom";
 
 const iconMap = {
   IoShirtOutline,
@@ -48,9 +49,12 @@ export default function Dashboard() {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <h2 className="font-inter-semibold text-lg text-gray-800">Pesanan Terbaru</h2>
-          <button className="text-sm text-[#3b6fd8] font-inter-medium hover:underline">
+          
+          <Link className="text-sm text-[#3b6fd8] font-inter-medium hover:underline"
+           to="/pesanan">
             Lihat Semua
-          </button>
+          </Link>
+
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">

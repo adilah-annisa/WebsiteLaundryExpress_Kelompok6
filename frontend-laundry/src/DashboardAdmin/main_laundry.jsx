@@ -5,7 +5,7 @@ import "./assets/tailwind.css";
 
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
-import Dashboard from "../pages/Dashboard";
+import Dashboard from "../pages/admin/Dashboard";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>

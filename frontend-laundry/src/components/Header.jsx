@@ -29,7 +29,7 @@ export default function Header() {
         {/* Avatar */}
         <div className="flex items-center gap-3">
           <img
-            src="https://avatar.iran.liara.run/public/28"
+            src="/public/iconAdmin.jpg"
             alt="Admin"
             className="w-10 h-10 rounded-full border-2 border-white shadow-sm"
           />

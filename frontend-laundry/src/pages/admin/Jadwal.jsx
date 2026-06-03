@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import PageHeader from '../DashboardAdmin/components/PageHeader';
-import StatusBadge from '../DashboardAdmin/components/StatusBadge';
+import PageHeader from '../../DashboardAdmin/components/PageHeader';
+import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
 
 const scheduleData = [
   { seri: '#00001', name: 'Budi', date: '24 April 2024', banyak: '5/5', titik: '75%', status: 'Selesai' },
@@ -60,7 +60,7 @@ export default function Jadwal() {
         title="Slot Waktu Penjemputan"
         showSearch={false}
         showAdd
-        addText="+ Tambah Slot"
+        addText="Tambah Slot"
         onAdd={() => setShowForm((prev) => !prev)}
       />
 

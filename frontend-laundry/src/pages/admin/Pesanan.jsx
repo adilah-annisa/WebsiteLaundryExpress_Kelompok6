@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import PageHeader from '../DashboardAdmin/components/PageHeader';
-import StatusBadge from '../DashboardAdmin/components/StatusBadge';
+import PageHeader from '../../DashboardAdmin/components/PageHeader';
+import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
 
 const initialOrders = [
   {
@@ -80,7 +80,10 @@ export default function Pesanan() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Kelola Pesanan" showSearch={false} />
+      <PageHeader 
+        title="Kelola Pesanan" 
+        subtitle="Kelola pesanan laundry dengan mudah dan efisien"
+        showSearch={false} />
 
       <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -94,13 +97,6 @@ export default function Pesanan() {
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter shadow-sm"
             />
           </div>
-          <button
-            type="button"
-            onClick={() => setShowForm((prev) => !prev)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-inter-semibold text-white shadow-sm transition hover:bg-[#0f4d8a]"
-          >
-            + Tambah Pesanan
-          </button>
         </div>
 
         {message && (

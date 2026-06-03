@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import PageHeader from '../DashboardAdmin/components/PageHeader';
-import StatusBadge from '../DashboardAdmin/components/StatusBadge';
+import PageHeader from '../../DashboardAdmin/components/PageHeader';
+import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
 
 const initialTransactions = [
   { seri: '#00001', name: 'Budi', date: '24 April 2024', amount: 'Rp 120.000', status: 'Lunas' },
