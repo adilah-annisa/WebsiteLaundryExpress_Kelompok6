@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageHeader from '../../DashboardAdmin/components/PageHeader';
 import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
 
@@ -49,11 +49,20 @@ const initialForm = {
 };
 
 export default function Pesanan() {
+  const [query, setQuery] = useState('');
   const [search, setSearch] = useState('');
   const [orders, setOrders] = useState(initialOrders);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearch(query);
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
 
   const filteredOrders = orders.filter((order) =>
     [order.name, order.seri].some((value) =>
@@ -91,8 +100,8 @@ export default function Pesanan() {
             <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Cari Nama atau Seri</label>
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari Nama atau Seri"
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter shadow-sm"
             />
