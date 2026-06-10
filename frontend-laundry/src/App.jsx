@@ -5,11 +5,15 @@ import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import Loading from "./components/Loading";
 
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Pesanan = lazy(() => import("./pages/Pesanan"));
-const Jadwal = lazy(() => import("./pages/Jadwal"));
-const Keuangan = lazy(() => import("./pages/Keuangan"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const Pesanan = lazy(() => import("./pages/admin/Pesanan"));
+const Jadwal = lazy(() => import("./pages/admin/Jadwal"));
+const Keuangan = lazy(() => import("./pages/admin/Keuangan"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+
 
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
@@ -26,7 +30,10 @@ export default function App() {
           <Route path="pesanan" element={<Pesanan />} />
           <Route path="jadwal" element={<Jadwal />} />
           <Route path="keuangan" element={<Keuangan />} />
+
+          <Route path="products/:id" element={<ProductDetail />} />
         </Route>
+
 
         {/* Auth */}
         <Route element={<AuthLayout />}>
