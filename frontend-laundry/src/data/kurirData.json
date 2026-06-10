@@ -1,0 +1,115 @@
+{
+  "stats": [
+    {
+      "label": "Total Tugas",
+      "value": "10",
+      "iconName": "IoClipboardOutline",
+      "color": "#3B82F6",
+      "bgIcon": "bg-blue-50"
+    },
+    {
+      "label": "Penjemputan",
+      "value": "4",
+      "iconName": "IoTimeOutline",
+      "color": "#F59E0B",
+      "bgIcon": "bg-yellow-50"
+    },
+    {
+      "label": "Pengantaran",
+      "value": "5",
+      "iconName": "IoCarOutline",
+      "color": "#3B82F6",
+      "bgIcon": "bg-blue-50"
+    },
+    {
+      "label": "Selesai Hari Ini",
+      "value": "1",
+      "iconName": "IoCheckmarkDoneOutline",
+      "color": "#22C55E",
+      "bgIcon": "bg-green-50"
+    }
+  ],
+  "tasks": [
+    {
+      "kode": "#K001",
+      "nama": "Ahmad Rizky",
+      "alamat": "Jl. Melati No. 12",
+      "waktu": "08:30",
+      "jenis": "Penjemputan",
+      "status": "Dijemput"
+    },
+    {
+      "kode": "#K002",
+      "nama": "Siti Aminah",
+      "alamat": "Jl. Mawar No. 5",
+      "waktu": "09:00",
+      "jenis": "Penjemputan",
+      "status": "Diproses"
+    },
+    {
+      "kode": "#K003",
+      "nama": "Budi Santoso",
+      "alamat": "Perumahan Griya Indah Blok C",
+      "waktu": "09:30",
+      "jenis": "Penjemputan",
+      "status": "Diproses"
+    },
+    {
+      "kode": "#K004",
+      "nama": "Rani Putri",
+      "alamat": "Jl. Kenanga No. 27",
+      "waktu": "10:00",
+      "jenis": "Penjemputan",
+      "status": "Dijemput"
+    },
+    {
+      "kode": "#K005",
+      "nama": "Dewi Lestari",
+      "alamat": "Jl. Anggrek No. 9",
+      "waktu": "11:00",
+      "jenis": "Pengantaran",
+      "status": "Diantar"
+    },
+    {
+      "kode": "#K006",
+      "nama": "Fajar Maulana",
+      "alamat": "Jl. Cempaka No. 33",
+      "waktu": "11:30",
+      "jenis": "Pengantaran",
+      "status": "Diantar"
+    },
+    {
+      "kode": "#K007",
+      "nama": "Nadia Aulia",
+      "alamat": "Komplek Kenari Blok A",
+      "waktu": "12:00",
+      "jenis": "Pengantaran",
+      "status": "Selesai"
+    },
+    {
+      "kode": "#K008",
+      "nama": "Pratama",
+      "alamat": "Jl. Garuda No. 1",
+      "waktu": "12:30",
+      "jenis": "Pengantaran",
+      "status": "Diproses"
+    },
+    {
+      "kode": "#K009",
+      "nama": "Intan Kurnia",
+      "alamat": "Jl. Pahlawan No. 14",
+      "waktu": "13:00",
+      "jenis": "Pengantaran",
+      "status": "Diantar"
+    },
+    {
+      "kode": "#K010",
+      "nama": "Reza Ramadhan",
+      "alamat": "Jl. Sudirman No. 88",
+      "waktu": "13:30",
+      "jenis": "Pengantaran",
+      "status": "Selesai"
+    }
+  ]
+}
+

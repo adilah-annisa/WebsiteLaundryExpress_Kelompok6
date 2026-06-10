@@ -4,7 +4,7 @@ import {
   IoTimeOutline,
   IoCloseCircleOutline,
 } from "react-icons/io5";
-import dashboardData from "../../DashboardAdmin/data/dashboardData.json";
+import dashboardData from "../../data/dashboardData.json";
 import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
 import { Link } from "react-router-dom";
 

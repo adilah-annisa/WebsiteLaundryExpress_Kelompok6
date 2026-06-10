@@ -1,0 +1,42 @@
+{
+  "stats": [
+    {
+      "label": "Total Pesanan",
+      "value": "12",
+      "iconName": "IoShirtOutline",
+      "color": "#3B82F6",
+      "bgIcon": "bg-blue-50"
+    },
+    {
+      "label": "Pesanan Selesai",
+      "value": "8",
+      "iconName": "IoCubeOutline",
+      "color": "#22C55E",
+      "bgIcon": "bg-green-50"
+    },
+    {
+      "label": "Sedang Diproses",
+      "value": "3",
+      "iconName": "IoTimeOutline",
+      "color": "#F59E0B",
+      "bgIcon": "bg-yellow-50"
+    },
+    {
+      "label": "Menunggu Jemput",
+      "value": "1",
+      "iconName": "IoCloseCircleOutline",
+      "color": "#EF4444",
+      "bgIcon": "bg-red-50"
+    }
+  ],
+  "orders": [
+    {
+      "kode": "#P001",
+      "layanan": "Cuci Setrika",
+      "tanggal": "15 Jan 2025",
+      "berat": "3 Kg",
+      "total": "Rp 21.000",
+      "status": "Diproses"
+    }
+  ]
+}
