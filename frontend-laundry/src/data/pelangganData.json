@@ -36,7 +36,115 @@
       "tanggal": "15 Jan 2025",
       "berat": "3 Kg",
       "total": "Rp 21.000",
-      "status": "Diproses"
+      "status": "Sedang Disetrika",
+      "pengantaran": "jemput",
+      "alamat": "Jl. Melati No. 12, Jakarta Selatan"
+    },
+    {
+      "kode": "#P002",
+      "layanan": "Cuci Kering",
+      "tanggal": "14 Jan 2025",
+      "berat": "5 Kg",
+      "total": "Rp 15.000",
+      "status": "Siap Diantar",
+      "pengantaran": "antar",
+      "alamat": "Jl. Mawar No. 5, Jakarta"
+    },
+    {
+      "kode": "#P003",
+      "layanan": "Dry Clean",
+      "tanggal": "13 Jan 2025",
+      "berat": "2 Kg",
+      "total": "Rp 30.000",
+      "status": "Selesai",
+      "pengantaran": "jemput",
+      "alamat": "Perumahan Griya Indah Blok C"
+    },
+    {
+      "kode": "#P004",
+      "layanan": "Setrika Saja",
+      "tanggal": "12 Jan 2025",
+      "berat": "4 Kg",
+      "total": "Rp 16.000",
+      "status": "Dijemput",
+      "pengantaran": "jemput",
+      "alamat": "Jl. Kenanga No. 27, Depok"
+    },
+    {
+      "kode": "#P005",
+      "layanan": "Cuci Setrika",
+      "tanggal": "11 Jan 2025",
+      "berat": "6 Kg",
+      "total": "Rp 42.000",
+      "status": "Sedang Dicuci",
+      "pengantaran": "antar",
+      "alamat": "Jl. Anggrek No. 9, Tangerang"
+    }
+  ],
+  "schedule": [
+    {
+      "seri": "#P001",
+      "name": "Anda",
+      "date": "15 Jan 2025",
+      "jam": "08:00",
+      "berat": "3.0 kg",
+      "titik": "75%",
+      "status": "Diproses",
+      "jenis": "Jemput"
+    },
+    {
+      "seri": "#P004",
+      "name": "Anda",
+      "date": "16 Jan 2025",
+      "jam": "09:30",
+      "berat": "4.0 kg",
+      "titik": "40%",
+      "status": "Dijemput",
+      "jenis": "Jemput"
+    },
+    {
+      "seri": "#P002",
+      "name": "Anda",
+      "date": "17 Jan 2025",
+      "jam": "14:00",
+      "berat": "5.0 kg",
+      "titik": "90%",
+      "status": "Diantar",
+      "jenis": "Antar"
+    },
+    {
+      "seri": "#P005",
+      "name": "Anda",
+      "date": "18 Jan 2025",
+      "jam": "10:00",
+      "berat": "6.0 kg",
+      "titik": "55%",
+      "status": "Diproses",
+      "jenis": "Antar"
+    }
+  ],
+  "buktiList": [
+    {
+      "kode": "#P003",
+      "status": "Selesai",
+      "tanggal": "13 Januari 2025",
+      "jam": "14:30 WIB",
+      "kurirNama": "Ahmad Rizky",
+      "kurirNo": "081234567890",
+      "alamat": "Perumahan Griya Indah Blok C, Tangerang",
+      "foto": null,
+      "catatan": "Laundry telah dikirimkan dengan aman ke alamat tujuan"
+    },
+    {
+      "kode": "#P002",
+      "status": "Siap Diantar",
+      "tanggal": "14 Januari 2025",
+      "jam": "11:00 WIB",
+      "kurirNama": "Budi Santoso",
+      "kurirNo": "081987654321",
+      "alamat": "Jl. Mawar No. 5, Jakarta",
+      "foto": null,
+      "catatan": "Menunggu konfirmasi penerimaan pelanggan"
     }
   ]
 }

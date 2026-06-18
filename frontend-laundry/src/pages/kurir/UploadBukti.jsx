@@ -1,22 +1,24 @@
 import { useState } from "react";
 import { IoCloudUploadOutline, IoCheckmarkCircleOutline, IoImage } from "react-icons/io5";
+import kurirData from "../../data/kurirData.json";
 
 export default function UploadBukti() {
+  const pengantaranTasks = kurirData.tasks.filter(
+    (t) => t.jenis === "Pengantaran" && t.status !== "Selesai"
+  );
+
+  const pesananOptions = pengantaranTasks.map((t) => ({
+    value: t.kode.replace("#", ""),
+    label: `${t.kode} - ${t.nama} (${t.alamat})`,
+  }));
+
   const [formData, setFormData] = useState({
     pesanan: "",
     foto: null,
     catatan: "",
   });
-
   const [preview, setPreview] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-
-  const pesananOptions = [
-    { value: "K001", label: "#K001 - Ahmad Rizky (Jl. Melati No. 12)" },
-    { value: "K002", label: "#K002 - Siti Aminah (Jl. Mawar No. 5)" },
-    { value: "K003", label: "#K003 - Budi Santoso (Perumahan Griya Indah Blok C)" },
-    { value: "K004", label: "#K004 - Rani Putri (Jl. Kenanga No. 27)" },
-  ];
+  const [toast, setToast] = useState("");
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -46,8 +48,8 @@ export default function UploadBukti() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.pesanan && formData.foto) {
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 4000);
+      setToast("Bukti pengantaran berhasil diunggah!");
+      setTimeout(() => setToast(""), 4000);
       setFormData({ pesanan: "", foto: null, catatan: "" });
       setPreview(null);
     }
@@ -63,14 +65,10 @@ export default function UploadBukti() {
 
   return (
     <div className="max-w-2xl">
-      {/* Success Message */}
-      {submitted && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 animate-in fade-in">
-          <IoCheckmarkCircleOutline className="text-2xl text-green-600 flex-shrink-0" />
-          <div>
-            <p className="font-inter-semibold text-green-700">Bukti Pengantaran Berhasil Diunggah!</p>
-            <p className="text-sm text-green-600">Terima kasih telah menyelesaikan pengantaran.</p>
-          </div>
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 rounded-xl bg-green-600 text-white px-5 py-3 text-sm font-inter-semibold shadow-lg flex items-center gap-2">
+          <IoCheckmarkCircleOutline className="text-xl" />
+          {toast}
         </div>
       )}
 

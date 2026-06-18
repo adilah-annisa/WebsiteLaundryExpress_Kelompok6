@@ -9,6 +9,7 @@ const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const Pesanan = lazy(() => import("./pages/admin/Pesanan"));
 const Jadwal = lazy(() => import("./pages/admin/Jadwal"));
 const Keuangan = lazy(() => import("./pages/admin/Keuangan"));
+const Laporan = lazy(() => import("./pages/admin/Laporan"));
 
 const PelangganLayout = lazy(() => import("./layouts/PelangganLayout"));
 const DashboardPelanggan = lazy(() => import("./pages/pelanggan/DashboardPelanggan"));
@@ -16,8 +17,10 @@ const Pemesanan = lazy(() => import("./pages/pelanggan/Pemesanan"));
 const StatusLaundry = lazy(() => import("./pages/pelanggan/StatusLaundry"));
 const RiwayatTransaksi = lazy(() => import("./pages/pelanggan/RiwayatTransaksi"));
 const BuktiPengantaran = lazy(() => import("./pages/pelanggan/BuktiPengantaran"));
+const PelangganJadwal = lazy(() => import("./pages/pelanggan/Jadwal"));
 
 const KurirLayout = lazy(() => import("./layouts/KurirLayout"));
+const PelangganAdmin = lazy(() => import("./pages/admin/Pelanggan"));
 const DashboardKurir = lazy(() => import("./pages/kurir/DashboardKurir"));
 const Jemput = lazy(() => import("./pages/kurir/Jemput"));
 const Antar = lazy(() => import("./pages/kurir/Antar"));
@@ -39,12 +42,15 @@ export default function App() {
           <Route path="pesanan" element={<Pesanan />} />
           <Route path="jadwal" element={<Jadwal />} />
           <Route path="keuangan" element={<Keuangan />} />
+          <Route path="laporan" element={<Laporan />} />
+          <Route path="pelanggan-admin" element={<PelangganAdmin />} />
           <Route path="products/:id" element={<ProductDetail />} />
         </Route>
 
         <Route path="/pelanggan" element={<PelangganLayout />}>
           <Route index element={<DashboardPelanggan />} />
           <Route path="pemesanan" element={<Pemesanan />} />
+          <Route path="jadwal" element={<PelangganJadwal />} />
           <Route path="status" element={<StatusLaundry />} />
           <Route path="riwayat" element={<RiwayatTransaksi />} />
           <Route path="bukti" element={<BuktiPengantaran />} />

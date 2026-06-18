@@ -33,83 +33,102 @@
     {
       "kode": "#K001",
       "nama": "Ahmad Rizky",
-      "alamat": "Jl. Melati No. 12",
+      "alamat": "Jl. Melati No. 12, Jakarta Selatan",
+      "telepon": "081234567890",
       "waktu": "08:30",
       "jenis": "Penjemputan",
-      "status": "Dijemput"
+      "status": "Dijemput",
+      "catatan": "Rumah pagar hijau, sebelah warung"
     },
     {
       "kode": "#K002",
       "nama": "Siti Aminah",
-      "alamat": "Jl. Mawar No. 5",
+      "alamat": "Jl. Mawar No. 5, Jakarta Pusat",
+      "telepon": "081234567891",
       "waktu": "09:00",
       "jenis": "Penjemputan",
-      "status": "Diproses"
+      "status": "Diproses",
+      "catatan": "Hubungi sebelum tiba"
     },
     {
       "kode": "#K003",
       "nama": "Budi Santoso",
-      "alamat": "Perumahan Griya Indah Blok C",
+      "alamat": "Perumahan Griya Indah Blok C No. 7, Tangerang",
+      "telepon": "081234567892",
       "waktu": "09:30",
       "jenis": "Penjemputan",
-      "status": "Diproses"
+      "status": "Diproses",
+      "catatan": "Parkir di depan pos security"
     },
     {
       "kode": "#K004",
       "nama": "Rani Putri",
-      "alamat": "Jl. Kenanga No. 27",
+      "alamat": "Jl. Kenanga No. 27, Depok",
+      "telepon": "081234567893",
       "waktu": "10:00",
       "jenis": "Penjemputan",
-      "status": "Dijemput"
+      "status": "Dijemput",
+      "catatan": ""
     },
     {
       "kode": "#K005",
       "nama": "Dewi Lestari",
-      "alamat": "Jl. Anggrek No. 9",
+      "alamat": "Jl. Anggrek No. 9, Jakarta Barat",
+      "telepon": "081234567894",
       "waktu": "11:00",
       "jenis": "Pengantaran",
-      "status": "Diantar"
+      "status": "Diantar",
+      "catatan": "Serahkan ke penjaga kos"
     },
     {
       "kode": "#K006",
       "nama": "Fajar Maulana",
-      "alamat": "Jl. Cempaka No. 33",
+      "alamat": "Jl. Cempaka No. 33, Bekasi",
+      "telepon": "081234567895",
       "waktu": "11:30",
       "jenis": "Pengantaran",
-      "status": "Diantar"
+      "status": "Diantar",
+      "catatan": ""
     },
     {
       "kode": "#K007",
       "nama": "Nadia Aulia",
-      "alamat": "Komplek Kenari Blok A",
+      "alamat": "Komplek Kenari Blok A No. 12, Bogor",
+      "telepon": "081234567896",
       "waktu": "12:00",
       "jenis": "Pengantaran",
-      "status": "Selesai"
+      "status": "Selesai",
+      "catatan": "Sudah diterima pelanggan"
     },
     {
       "kode": "#K008",
       "nama": "Pratama",
-      "alamat": "Jl. Garuda No. 1",
+      "alamat": "Jl. Garuda No. 1, Jakarta Timur",
+      "telepon": "081234567897",
       "waktu": "12:30",
       "jenis": "Pengantaran",
-      "status": "Diproses"
+      "status": "Diproses",
+      "catatan": "Foto bukti wajib diunggah"
     },
     {
       "kode": "#K009",
       "nama": "Intan Kurnia",
-      "alamat": "Jl. Pahlawan No. 14",
+      "alamat": "Jl. Pahlawan No. 14, Tangerang Selatan",
+      "telepon": "081234567898",
       "waktu": "13:00",
       "jenis": "Pengantaran",
-      "status": "Diantar"
+      "status": "Diantar",
+      "catatan": ""
     },
     {
       "kode": "#K010",
       "nama": "Reza Ramadhan",
-      "alamat": "Jl. Sudirman No. 88",
+      "alamat": "Jl. Sudirman No. 88, Jakarta Pusat",
+      "telepon": "081234567899",
       "waktu": "13:30",
       "jenis": "Pengantaran",
-      "status": "Selesai"
+      "status": "Selesai",
+      "catatan": ""
     }
   ]
 }
-
