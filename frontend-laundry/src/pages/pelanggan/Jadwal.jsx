@@ -1,131 +1,192 @@
 import { useMemo, useState } from "react";
-import pelangganData from "../../data/pelangganData.json";
-import StatusBadge from "../../components/StatusBadge";
+import { IoCheckmarkCircleOutline } from "react-icons/io5";
+import { useAuth } from "../../context/AuthContext";
+import { useData } from "../../context/DataContext";
 
 export default function JadwalPelanggan() {
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const pageSize = 5;
+  const { user } = useAuth();
+  const { getOrdersForCustomer, slots, bookSlot } = useData();
 
-  const statusOptions = ["all", "Selesai", "Diproses", "Dijemput", "Diantar"];
+  const orders = getOrdersForCustomer(user.customerId);
+  const pendingOrders = orders.filter((o) => !o.slotId && o.status === "Diproses");
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return pelangganData.schedule.filter((item) => {
-      const matchesQuery =
-        !q ||
-        [item.seri, item.name, item.date, item.berat, item.titik]
-          .filter(Boolean)
-          .some((value) => value.toLowerCase().includes(q));
-      const matchesStatus = statusFilter === "all" ? true : item.status === statusFilter;
-      return matchesQuery && matchesStatus;
-    });
-  }, [query, statusFilter]);
+  const [selectedOrderId, setSelectedOrderId] = useState(pendingOrders[0]?.id || "");
+  const [selectedSlotId, setSelectedSlotId] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId);
+  const jenis = selectedOrder?.pengantaran === "antar" ? "antar" : "jemput";
+
+  const availableSlots = useMemo(() => {
+    return slots
+      .filter((s) => s.jenis === jenis && s.terisi < s.kapasitas)
+      .sort((a, b) => `${a.tanggal}${a.jam}`.localeCompare(`${b.tanggal}${b.jam}`));
+  }, [slots, jenis]);
+
+  const fullSlots = useMemo(() => {
+    return slots.filter((s) => s.jenis === jenis && s.terisi >= s.kapasitas);
+  }, [slots, jenis]);
+
+  const handleBook = () => {
+    setError("");
+    setSuccess("");
+
+    if (!selectedOrderId) {
+      setError("Pilih pesanan terlebih dahulu.");
+      return;
+    }
+    if (!selectedSlotId) {
+      setError("Pilih slot jadwal yang tersedia.");
+      return;
+    }
+
+    const slot = slots.find((s) => s.id === selectedSlotId);
+    if (slot && slot.terisi >= slot.kapasitas) {
+      setError("Slot penuh. Silakan pilih jadwal lain.");
+      return;
+    }
+
+    const result = bookSlot(selectedOrderId, selectedSlotId);
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+
+    setSuccess(`Jadwal ${slot.tanggal} pukul ${slot.jam} berhasil dipilih untuk pesanan ${selectedOrderId}.`);
+    setSelectedSlotId("");
+    setTimeout(() => setSuccess(""), 5000);
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-screen-xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       <div className="rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 bg-linear-to-r from-gray-50 to-white">
-          <h2 className="text-xl font-inter-semibold text-gray-900">Jadwal Jemput Laundry</h2>
-          <p className="mt-1 text-sm text-gray-500">Lihat jadwal dan status jemput untuk pesanan Anda.</p>
+          <h2 className="text-xl font-inter-semibold text-gray-900">Pilih Jadwal Antar-Jemput</h2>
+          <p className="mt-1 text-sm text-gray-500">Pilih slot waktu yang tersedia untuk pesanan Anda.</p>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
-          <div className="grid gap-4 md:grid-cols-[1.6fr_1fr_0.9fr] items-center">
-            <div>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari kode, nama, tanggal..."
-                className="w-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
-              />
+        <div className="px-6 py-5 space-y-5">
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>
+          )}
+          {success && (
+            <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 flex items-center gap-2">
+              <IoCheckmarkCircleOutline className="text-lg" />
+              {success}
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full rounded-3xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 cursor-pointer"
-            >
-              {statusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {status === "all" ? "Semua Status" : status}
-                </option>
-              ))}
-            </select>
-            <div className="rounded-3xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-              Menampilkan {filtered.length} jadwal
-            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-inter-semibold text-gray-700 mb-2">Pilih Pesanan</label>
+            {pendingOrders.length === 0 ? (
+              <p className="text-sm text-gray-500">Semua pesanan sudah memiliki jadwal, atau belum ada pesanan baru.</p>
+            ) : (
+              <select
+                value={selectedOrderId}
+                onChange={(e) => {
+                  setSelectedOrderId(e.target.value);
+                  setSelectedSlotId("");
+                  setError("");
+                }}
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-200"
+              >
+                {pendingOrders.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.id} — {o.layananLabel} ({o.pengantaran === "jemput" ? "Jemput" : "Antar"})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left">
-              <thead className="bg-gray-50">
-                <tr>
-                  {['Seri', 'Nama', 'Tanggal', 'Berat', 'Progress', 'Status'].map((label) => (
-                    <th key={label} className="px-6 py-4 text-xs font-inter-semibold uppercase tracking-[0.18em] text-gray-500">
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {pageItems.length > 0 ? (
-                  pageItems.map((item) => (
-                    <tr key={item.seri} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-inter-semibold text-gray-800">{item.seri}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{item.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{item.date}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{item.berat}</td>
-                      <td className="px-6 py-4">
-                        <div className="rounded-full bg-gray-100 h-2.5 overflow-hidden">
-                          <div className="h-full rounded-full bg-linear-to-r from-blue-500 to-sky-500" style={{ width: item.titik }} />
-                        </div>
-                        <p className="mt-2 text-xs text-gray-500">{item.titik} selesai</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={item.status} />
-                      </td>
-                    </tr>
-                  ))
+          {selectedOrder && (
+            <>
+              <div>
+                <h3 className="text-sm font-inter-semibold text-gray-700 mb-3">Slot Tersedia ({jenis === "jemput" ? "Penjemputan" : "Pengantaran"})</h3>
+                {availableSlots.length === 0 ? (
+                  <p className="text-sm text-gray-500">Tidak ada slot tersedia. Hubungi pemilik laundry.</p>
                 ) : (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
-                      Tidak ada jadwal yang cocok. Ubah kata kunci atau filter status.
-                    </td>
-                  </tr>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {availableSlots.map((slot) => (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        onClick={() => setSelectedSlotId(slot.id)}
+                        className={`rounded-2xl border p-4 text-left transition-all ${
+                          selectedSlotId === slot.id
+                            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                            : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <p className="font-inter-semibold text-gray-900">{slot.tanggal}</p>
+                        <p className="text-sm text-gray-600 mt-1">Pukul {slot.jam}</p>
+                        <p className="text-xs text-green-600 mt-2">
+                          Tersedia {slot.kapasitas - slot.terisi} dari {slot.kapasitas}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-gray-500">
-              Halaman {page} dari {totalPages}
-            </p>
-            <div className="flex items-center gap-2">
+              {fullSlots.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-inter-semibold text-gray-500 mb-2">Slot Penuh (tidak dapat dipilih)</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {fullSlots.map((slot) => (
+                      <span
+                        key={slot.id}
+                        className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500 line-through"
+                      >
+                        {slot.tanggal} {slot.jam}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className="rounded-3xl border border-gray-200 bg-white px-4 py-2 text-sm font-inter-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleBook}
+                disabled={!selectedSlotId || pendingOrders.length === 0}
+                className="rounded-2xl bg-[#1565C0] px-6 py-3 text-sm font-inter-semibold text-white hover:bg-[#0f4d8a] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sebelumnya
+                Simpan Jadwal
               </button>
-              <button
-                type="button"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page === totalPages}
-                className="rounded-3xl border border-gray-200 bg-white px-4 py-2 text-sm font-inter-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Berikutnya
-              </button>
-            </div>
+            </>
+          )}
+
+          <div className="border-t pt-5">
+            <h3 className="text-sm font-inter-semibold text-gray-700 mb-3">Jadwal Pesanan Saya</h3>
+            {orders.filter((o) => o.slotId).length === 0 ? (
+              <p className="text-sm text-gray-500">Belum ada jadwal terpilih.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {["Kode", "Layanan", "Tanggal", "Jam", "Status"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-500">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {orders
+                      .filter((o) => o.slotId)
+                      .map((o) => (
+                        <tr key={o.id}>
+                          <td className="px-4 py-3 font-semibold">{o.id}</td>
+                          <td className="px-4 py-3">{o.layananLabel}</td>
+                          <td className="px-4 py-3">{o.tanggal}</td>
+                          <td className="px-4 py-3">{o.jam}</td>
+                          <td className="px-4 py-3">{o.status}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,13 +1,15 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { IoNotificationsOutline, IoMenuOutline } from "react-icons/io5";
+import { useAuth } from "../context/AuthContext";
 
 const pageTitles = {
-  "/": "Dashboard",
-  "/pesanan": "Kelola Pesanan",
-  "/jadwal": "Slot Waktu Penjemputan",
-  "/keuangan": "Keuangan",
-  "/laporan": "Laporan Pendapatan",
-  "/pelanggan-admin": "Kelola Pelanggan",
+  "/dashboard": "Dashboard",
+  "/dashboard/pesanan": "Kelola Pesanan",
+  "/dashboard/jadwal": "Slot Waktu Penjemputan",
+  "/dashboard/keuangan": "Keuangan",
+  "/dashboard/laporan": "Laporan Pendapatan",
+  "/dashboard/pelanggan-admin": "Kelola Pelanggan",
 
   "/pelanggan": "Dashboard Pelanggan",
   "/pelanggan/pemesanan": "Pesan Laundry",
@@ -22,15 +24,24 @@ const pageTitles = {
   "/kurir/bukti": "Upload Bukti",
 };
 
+const roleLabels = {
+  admin: "Pemilik Laundry",
+  pelanggan: "Pelanggan",
+  kurir: "Kurir",
+};
+
 export default function Header({ onMenuClick }) {
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const title = pageTitles[pathname] || "Dashboard";
+  const role = roleLabels[user?.role] || "Pengguna";
 
-  const isPelanggan = pathname.startsWith("/pelanggan");
-  const isKurir = pathname.startsWith("/kurir");
+  const [hasPageHeader, setHasPageHeader] = useState(false);
 
-  const role = isPelanggan ? "Pelanggan" : isKurir ? "Kurir" : "Admin";
-  const desc = isPelanggan ? "User" : isKurir ? "Delivery Staff" : "Super Admin";
+  useEffect(() => {
+    const found = !!document.querySelector(".page-header");
+    setHasPageHeader(found);
+  }, [pathname]);
 
   return (
     <header className="flex items-center justify-between mb-6 md:mb-8 gap-4">
@@ -45,12 +56,14 @@ export default function Header({ onMenuClick }) {
             <IoMenuOutline className="text-xl text-gray-700" />
           </button>
         )}
-        <div className="min-w-0">
-          <h1 className="font-inter-semibold text-xl md:text-2xl text-gray-800 truncate">{title}</h1>
-          <p className="text-sm text-gray-500 mt-1 font-poppins">
-            Selamat datang kembali, {role}
-          </p>
-        </div>
+        {!hasPageHeader && (
+          <div className="min-w-0">
+            <h1 className="font-inter-semibold text-xl md:text-2xl text-gray-800 truncate">{title}</h1>
+            <p className="text-sm text-gray-500 mt-1 font-poppins">
+              Selamat datang, {user?.name || role}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3 md:gap-4 shrink-0">
@@ -66,8 +79,8 @@ export default function Header({ onMenuClick }) {
             className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-white shadow-sm"
           />
           <div className="hidden md:block">
-            <p className="text-sm font-inter-semibold text-gray-800">{role}</p>
-            <p className="text-xs text-gray-500 font-poppins">{desc}</p>
+            <p className="text-sm font-inter-semibold text-gray-800">{user?.name || role}</p>
+            <p className="text-xs text-gray-500 font-poppins">{role}</p>
           </div>
         </div>
       </div>

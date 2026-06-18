@@ -1,180 +1,97 @@
-import { useMemo, useState } from 'react';
-import PageHeader from '../../DashboardAdmin/components/PageHeader';
-import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
+import { useMemo, useState } from "react";
+import PageHeader from "../../DashboardAdmin/components/PageHeader";
+import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
+import { useData } from "../../context/DataContext";
+import { formatRupiah } from "../../lib/constants";
 
-const initialTransactions = [
-  { seri: '#00001', name: 'Budi', date: '24 April 2024', amount: 'Rp 120.000', status: 'Lunas' },
-  { seri: '#00002', name: 'Susi', date: '24 April 2024', amount: 'Rp 85.000', status: 'Belum Lunas' },
-  { seri: '#00003', name: 'Andi', date: '24 April 2024', amount: 'Rp 135.000', status: 'Lunas' },
-  { seri: '#00004', name: 'Lina', date: '24 April 2024', amount: 'Rp 150.000', status: 'Belum Lunas' },
-];
-
-const layananOptions = [
-  { value: 'cuci-kering', label: 'Cuci Kering', price: 3000 },
-  { value: 'cuci-setrika', label: 'Cuci Setrika', price: 7000 },
-  { value: 'setrika-saja', label: 'Setrika Saja', price: 4000 },
-  { value: 'dry-clean', label: 'Dry Clean', price: 15000 },
-];
-
-const statusOptions = ['Lunas', 'Belum Lunas'];
-const initialForm = { seri: '', name: '', date: '', amount: '', status: 'Lunas' };
+const statusOptions = ["Lunas", "Belum Lunas"];
+const initialForm = { seri: "", name: "", date: "", amount: "", status: "Lunas" };
 
 export default function Keuangan() {
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const { transactions, totalPendapatan, addTransaction, orders } = useData();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [message, setMessage] = useState('');
-  const [toast, setToast] = useState('');
-
-  const [calcLayanan, setCalcLayanan] = useState('');
-  const [calcBerat, setCalcBerat] = useState('');
-  const [calcOngkir, setCalcOngkir] = useState('5000');
-
-  const calcPrice = layananOptions.find((l) => l.value === calcLayanan)?.price || 0;
-  const calcBeratNum = Number(calcBerat) || 0;
-  const calcOngkirNum = Number(calcOngkir) || 0;
-  const calcTotal = calcPrice * calcBeratNum + (calcBeratNum > 0 ? calcOngkirNum : 0);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [message, setMessage] = useState("");
+  const [toast, setToast] = useState("");
 
   const filteredTransactions = useMemo(() => {
     const q = search.toLowerCase();
     return transactions.filter((item) => {
       const matchSearch = [item.seri, item.name].some((v) => v.toLowerCase().includes(q));
-      const matchStatus = statusFilter === 'all' || item.status === statusFilter;
+      const matchStatus = statusFilter === "all" || item.status === statusFilter;
       return matchSearch && matchStatus;
     });
   }, [transactions, search, statusFilter]);
 
   const summaryCards = [
-    { label: 'Total Pendapatan', value: `Rp ${transactions.reduce((acc, item) => acc + Number(item.amount.replace(/[^0-9]/g, '')), 0).toLocaleString('id-ID')}`, bg: 'bg-green-50', text: 'text-green-700' },
-    { label: 'Pesanan Lunas', value: transactions.filter((item) => item.status === 'Lunas').length, bg: 'bg-blue-50', text: 'text-blue-700' },
-    { label: 'Pesanan Pending', value: transactions.filter((item) => item.status === 'Belum Lunas').length, bg: 'bg-orange-50', text: 'text-orange-700' },
+    { label: "Total Pendapatan", value: formatRupiah(totalPendapatan), bg: "bg-green-50", text: "text-green-700" },
+    { label: "Pesanan Lunas", value: transactions.filter((t) => t.status === "Lunas").length, bg: "bg-blue-50", text: "text-blue-700" },
+    { label: "Pesanan Pending", value: transactions.filter((t) => t.status === "Belum Lunas").length, bg: "bg-orange-50", text: "text-orange-700" },
   ];
-
-  const showToast = (text) => {
-    setToast(text);
-    setTimeout(() => setToast(''), 3000);
-  };
 
   const handleInputChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setMessage("");
   };
 
   const handleSave = () => {
-    if (!form.seri || !form.name || !form.date || !form.amount) {
-      setMessage('Lengkapi semua data transaksi.');
+    const result = addTransaction(form);
+    if (!result.ok) {
+      setMessage(result.message);
       return;
     }
-    setTransactions((prev) => [form, ...prev]);
     setForm(initialForm);
     setShowForm(false);
-    setMessage('');
-    showToast('Transaksi berhasil ditambahkan.');
+    setMessage("");
+    setToast("Transaksi berhasil ditambahkan. Total pendapatan diperbarui.");
+    setTimeout(() => setToast(""), 3000);
   };
 
-  const applyCalcToForm = () => {
-    if (!calcLayanan || !calcBeratNum) return;
-    setForm((prev) => ({
-      ...prev,
-      amount: `Rp ${calcTotal.toLocaleString('id-ID')}`,
-    }));
+  const fillFromOrder = (orderId) => {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+    setForm({
+      seri: order.id,
+      name: order.nama,
+      date: new Date().toISOString().split("T")[0],
+      amount: order.total != null ? formatRupiah(order.total) : "",
+      status: "Lunas",
+    });
     setShowForm(true);
-    showToast('Total biaya diterapkan ke form transaksi.');
   };
 
   return (
     <div className="space-y-6">
       {toast && (
-        <div className="fixed top-4 right-4 z-50 rounded-xl bg-slate-900 text-white px-5 py-3 text-sm font-inter-semibold shadow-lg animate-in fade-in">
+        <div className="fixed top-4 right-4 z-50 rounded-xl bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-lg">
           {toast}
         </div>
       )}
 
-      <PageHeader title="Keuangan" subtitle="Kelola transaksi dan hitung biaya laundry" showSearch={false} />
-
-      <div className="rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-white p-6 shadow-sm">
-        <h2 className="font-inter-semibold text-lg text-gray-800">Kalkulator Biaya Laundry</h2>
-        <p className="text-sm text-gray-500 mt-1 font-poppins">Hitung biaya berdasarkan jenis layanan, berat, dan ongkir antar/jemput.</p>
-        <div className="mt-5 grid gap-4 md:grid-cols-4">
-          <div>
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Jenis Layanan</label>
-            <select
-              value={calcLayanan}
-              onChange={(e) => setCalcLayanan(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter bg-white"
-            >
-              <option value="">Pilih layanan</option>
-              {layananOptions.map((l) => (
-                <option key={l.value} value={l.value}>{l.label} — Rp {l.price.toLocaleString('id-ID')}/Kg</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Berat (Kg)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.1"
-              value={calcBerat}
-              onChange={(e) => setCalcBerat(e.target.value)}
-              placeholder="Contoh: 3.5"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Ongkir Antar/Jemput</label>
-            <input
-              type="number"
-              min="0"
-              value={calcOngkir}
-              onChange={(e) => setCalcOngkir(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter"
-            />
-          </div>
-          <div className="flex flex-col justify-end">
-            <div className="rounded-xl bg-slate-800 p-4 text-white mb-3">
-              <p className="text-xs text-slate-300">Total Estimasi</p>
-              <p className="text-2xl font-inter-semibold mt-1">
-                {calcTotal > 0 ? `Rp ${calcTotal.toLocaleString('id-ID')}` : '-'}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={applyCalcToForm}
-              disabled={!calcLayanan || !calcBeratNum}
-              className="rounded-xl bg-[#1565C0] px-4 py-2.5 text-sm font-inter-semibold text-white hover:bg-[#0f4d8a] transition disabled:opacity-50"
-            >
-              Terapkan ke Transaksi
-            </button>
-          </div>
-        </div>
-      </div>
+      <PageHeader title="Keuangan & Transaksi" subtitle="Catat transaksi dan pantau pendapatan" showSearch={false} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {summaryCards.map((card) => (
-          <div key={card.label} className={`rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow ${card.bg}`}>
-            <p className="text-sm text-gray-500 font-poppins">{card.label}</p>
-            <p className={`mt-3 text-3xl font-inter-semibold ${card.text}`}>{card.value}</p>
+          <div key={card.label} className={`rounded-2xl p-6 shadow-sm ${card.bg}`}>
+            <p className="text-sm text-gray-500">{card.label}</p>
+            <p className={`mt-3 text-3xl font-semibold ${card.text}`}>{card.value}</p>
           </div>
         ))}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap gap-3">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari seri atau nama..."
-              className="w-full sm:w-64 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter shadow-sm"
+              className="px-4 py-2.5 border rounded-xl w-56"
             />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter bg-white shadow-sm"
-            >
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-2.5 border rounded-xl bg-white">
               <option value="all">Semua Status</option>
               {statusOptions.map((s) => (
                 <option key={s} value={s}>{s}</option>
@@ -183,10 +100,10 @@ export default function Keuangan() {
           </div>
           <button
             type="button"
-            onClick={() => setShowForm((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-inter-semibold text-white shadow-sm transition hover:bg-[#0f4d8a]"
+            onClick={() => setShowForm((p) => !p)}
+            className="rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f4d8a]"
           >
-            {showForm ? 'Tutup Form' : '+ Tambah Transaksi'}
+            {showForm ? "Tutup Form" : "+ Tambah Transaksi"}
           </button>
         </div>
 
@@ -195,72 +112,72 @@ export default function Keuangan() {
         )}
 
         {showForm && (
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-            <h2 className="text-lg font-inter-semibold text-gray-800 mb-5">Form Tambah Transaksi</h2>
+          <div className="rounded-2xl border bg-gray-50 p-6">
+            <h2 className="text-lg font-semibold mb-4">Form Tambah Transaksi</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {[
-                { label: 'Seri', field: 'seri', type: 'text' },
-                { label: 'Nama', field: 'name', type: 'text' },
-                { label: 'Tanggal', field: 'date', type: 'date' },
-                { label: 'Jumlah', field: 'amount', type: 'text' },
+                { label: "Seri Pesanan", field: "seri", type: "text" },
+                { label: "Nama Pelanggan", field: "name", type: "text" },
+                { label: "Tanggal", field: "date", type: "date" },
+                { label: "Jumlah", field: "amount", type: "text" },
               ].map((item) => (
                 <div key={item.field}>
-                  <label className="block text-sm font-inter-semibold text-gray-600 mb-2">{item.label}</label>
+                  <label className="block text-sm font-semibold text-gray-600 mb-2">{item.label}</label>
                   <input
                     type={item.type}
                     value={form[item.field]}
                     onChange={(e) => handleInputChange(item.field, e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter"
+                    className="w-full px-4 py-2.5 border rounded-xl"
                   />
                 </div>
               ))}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Status Bayar</label>
-                <select
-                  value={form.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 font-inter bg-white"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>{status}</option>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Status Bayar</label>
+                <select value={form.status} onChange={(e) => handleInputChange("status", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl bg-white">
+                  {statusOptions.map((s) => (
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-inter-semibold text-gray-700 hover:bg-gray-100">
-                Batal
-              </button>
-              <button type="button" onClick={handleSave} className="rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-inter-semibold text-white hover:bg-[#0f4d8a] transition">
-                Simpan Transaksi
-              </button>
+            <p className="mt-3 text-xs text-gray-500">Isi cepat dari pesanan lunas:</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {orders.filter((o) => o.total != null).slice(0, 4).map((o) => (
+                <button key={o.id} type="button" onClick={() => fillFromOrder(o.id)} className="text-xs px-3 py-1 rounded-full border hover:bg-white">
+                  {o.id}
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 flex gap-3 justify-end">
+              <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 rounded-xl border font-semibold">Batal</button>
+              <button type="button" onClick={handleSave} className="px-5 py-3 rounded-xl bg-[#1565C0] text-white font-semibold">Simpan Transaksi</button>
             </div>
           </div>
         )}
 
-        <div className="overflow-x-auto rounded-xl border border-gray-100">
-          <table className="min-w-full w-full text-left">
+        <div className="overflow-x-auto rounded-xl border">
+          <table className="min-w-full text-left">
             <thead>
-              <tr className="bg-gray-50/80">
-                {['Seri', 'Nama', 'Tanggal', 'Jumlah', 'Status Bayar'].map((label) => (
-                  <th key={label} className="px-4 py-3 text-xs font-inter-semibold text-gray-600 uppercase tracking-wider">{label}</th>
+              <tr className="bg-gray-50">
+                {["Seri", "Nama", "Tanggal", "Jumlah", "Status"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y">
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((item) => (
-                  <tr key={item.seri} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{item.seri}</td>
-                    <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{item.name}</td>
-                    <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{item.date}</td>
-                    <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{item.amount}</td>
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 text-sm">{item.seri}</td>
+                    <td className="px-4 py-4 text-sm">{item.name}</td>
+                    <td className="px-4 py-4 text-sm">{item.date}</td>
+                    <td className="px-4 py-4 text-sm">{item.amount}</td>
                     <td className="px-4 py-4"><StatusBadge status={item.status} /></td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-14 text-center text-gray-500 font-poppins">Tidak ada transaksi yang cocok.</td>
+                  <td colSpan={5} className="px-6 py-14 text-center text-gray-500">Tidak ada transaksi.</td>
                 </tr>
               )}
             </tbody>

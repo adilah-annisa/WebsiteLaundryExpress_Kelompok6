@@ -6,7 +6,8 @@ const statusStyles = {
   'Cancel': 'bg-red-100 text-red-600',
   'Total': 'bg-red-100 text-red-600',
   'Lunas': 'bg-green-100 text-green-600',
-  'Belum Lunas': 'bg-red-100 text-red-600'
+  'Belum Lunas': 'bg-red-100 text-red-600',
+  'Menunggu Penimbangan': 'bg-orange-100 text-orange-700',
 };
 
 export default function StatusBadge({ status, className = '' }) {

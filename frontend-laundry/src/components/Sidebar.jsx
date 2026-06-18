@@ -1,24 +1,33 @@
 import { useEffect } from "react";
-import { MdSpaceDashboard, MdOutlineSchedule, MdAttachMoney, MdBarChart, MdPersonOutline } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { MdSpaceDashboard, MdOutlineSchedule, MdAttachMoney, MdBarChart, MdPersonOutline, MdLogout } from "react-icons/md";
 import { GoListOrdered } from "react-icons/go";
 import { IoClose } from "react-icons/io5";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar({ open = false, onClose }) {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { logout, user } = useAuth();
 
     const menuItems = [
-        { icon: MdSpaceDashboard, label: "Dashboard", path: "/" },
-        { icon: GoListOrdered, label: "Pesanan", path: "/pesanan" },
-        { icon: MdOutlineSchedule, label: "Jadwal", path: "/jadwal" },
-        { icon: MdAttachMoney, label: "Keuangan", path: "/keuangan" },
-        { icon: MdBarChart, label: "Laporan", path: "/laporan" },
-        { icon: MdPersonOutline, label: "Pelanggan", path: "/pelanggan-admin" },
+        { icon: MdSpaceDashboard, label: "Dashboard", path: "/dashboard" },
+        { icon: GoListOrdered, label: "Pesanan", path: "/dashboard/pesanan" },
+        { icon: MdOutlineSchedule, label: "Jadwal", path: "/dashboard/jadwal" },
+        { icon: MdAttachMoney, label: "Keuangan", path: "/dashboard/keuangan" },
+        { icon: MdBarChart, label: "Laporan", path: "/dashboard/laporan" },
+        { icon: MdPersonOutline, label: "Pelanggan", path: "/dashboard/pelanggan-admin" },
     ];
 
     useEffect(() => {
         onClose?.();
     }, [location.pathname]);
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     const navContent = (
         <>
@@ -64,10 +73,17 @@ export default function Sidebar({ open = false, onClose }) {
                 </ul>
             </nav>
 
-            <div className="mt-auto pt-6 border-t border-white/20">
-                <p className="text-xs text-blue-100 opacity-60 text-center">
-                    © 2025 Laundry Express
-                </p>
+            <div className="mt-auto pt-6 border-t border-white/20 space-y-3">
+                <p className="text-xs text-blue-100 opacity-80 truncate">{user?.name}</p>
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-sm text-white/90 hover:bg-white/10 transition-colors"
+                >
+                    <MdLogout className="text-lg" />
+                    Keluar
+                </button>
+                <p className="text-xs text-blue-100 opacity-60 text-center">© 2025 Laundry Express</p>
             </div>
         </>
     );

@@ -1,36 +1,33 @@
-import { useState } from 'react';
-import PageHeader from '../../DashboardAdmin/components/PageHeader';
-import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
+import { useState } from "react";
+import PageHeader from "../../DashboardAdmin/components/PageHeader";
+import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
+import { useData } from "../../context/DataContext";
+import { KURIR_NAMA } from "../../lib/constants";
 
-const scheduleData = [
-  { seri: '#00001', name: 'Budi', date: '24 April 2024', banyak: '5/5', titik: '75%', status: 'Selesai' },
-  { seri: '#00002', name: 'Susi', date: '24 April 2024', banyak: '4/5', titik: '60%', status: 'Diproses' },
-  { seri: '#00003', name: 'Andi', date: '24 April 2024', banyak: '2/5', titik: '40%', status: 'Dijemput' },
-  { seri: '#00004', name: 'Lina', date: '24 April 2024', banyak: '2/5', titik: '50%', status: 'Diantar' },
-];
+const statusOptions = ["Dijemput", "Diproses", "Diantar", "Selesai"];
 
-const statusOptions = ['Selesai', 'Diproses', 'Dijemput', 'Diantar'];
 const initialForm = {
-  seri: '',
-  name: '',
-  date: '',
-  banyak: '1/5',
-  titik: '0%',
-  status: 'Dijemput',
+  id: "",
+  tanggal: "",
+  jam: "",
+  jenis: "jemput",
+  kapasitas: "3",
+  terisi: "0",
 };
 
 export default function Jadwal() {
-  const [search, setSearch] = useState('');
-  const [schedule, setSchedule] = useState(scheduleData);
+  const { slots, addSlot } = useData();
+  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
-  const [kurir, setKurir] = useState('Samsont');
+  const [editId, setEditId] = useState(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [message, setMessage] = useState('');
 
-  const filteredSchedule = schedule.filter((item) =>
-    [item.name, item.seri].some((value) =>
-      value.toLowerCase().includes(search.toLowerCase())
+  const filteredSchedule = slots.filter((item) =>
+    [item.tanggal, item.jam, item.jenis].some((v) =>
+      String(v).toLowerCase().includes(search.toLowerCase())
     )
   );
 
@@ -39,204 +36,168 @@ export default function Jadwal() {
 
   const handleInputChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setError("");
+  };
+
+  const openEdit = (slot) => {
+    setEditId(slot.id);
+    setForm({
+      id: slot.id,
+      tanggal: slot.tanggal,
+      jam: slot.jam,
+      jenis: slot.jenis,
+      kapasitas: String(slot.kapasitas),
+      terisi: String(slot.terisi),
+    });
+    setShowForm(true);
+    setError("");
   };
 
   const handleSave = () => {
-    if (!form.seri || !form.name || !form.date) {
-      setMessage('Harap lengkapi seri, nama, dan tanggal.');
+    if (!form.tanggal || !form.jam) {
+      setError("Harap lengkapi tanggal dan jam.");
       return;
     }
 
-    setSchedule((prev) => [form, ...prev]);
+    const result = addSlot({
+      id: editId || undefined,
+      tanggal: form.tanggal,
+      jam: form.jam,
+      jenis: form.jenis,
+      kapasitas: form.kapasitas,
+      terisi: form.terisi,
+    });
+
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+
+    setMessage(editId ? "Slot jadwal berhasil diperbarui." : "Slot jadwal berhasil ditambahkan.");
     setForm(initialForm);
+    setEditId(null);
     setShowForm(false);
-    setMessage('Slot penjemputan berhasil ditambahkan.');
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(""), 3000);
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Slot Waktu Penjemputan"
+        title="Kelola Jadwal Antar-Jemput"
         showSearch={false}
         showAdd
         addText="Tambah Slot"
-        onAdd={() => setShowForm((prev) => !prev)}
+        onAdd={() => {
+          setShowForm(true);
+          setEditId(null);
+          setForm(initialForm);
+          setError("");
+        }}
       />
 
       <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-[1.4fr_0.9fr] items-end">
+        <div className="grid gap-4 md:grid-cols-2 items-end">
           <div>
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Cari Nama atau Seri</label>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">Cari Jadwal</label>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari Nama atau Seri"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter shadow-sm"
+              placeholder="Cari tanggal atau jam..."
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div>
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Kurir</label>
-            <select
-              value={kurir}
-              onChange={(e) => setKurir(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter bg-white shadow-sm"
-            >
-              <option>Samsont</option>
-              <option>Rizal</option>
-              <option>Nina</option>
-            </select>
+          <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Kurir: <strong>{KURIR_NAMA}</strong> (1 kurir)
           </div>
         </div>
 
         {message && (
-          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-            {message}
-          </div>
+          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{message}</div>
+        )}
+        {error && !showForm && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>
         )}
 
         {showForm && (
           <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
-              <h2 className="text-lg font-inter-semibold text-gray-800">Form Tambah Slot</h2>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Tutup
-              </button>
-            </div>
+            <h2 className="text-lg font-semibold mb-4">{editId ? "Ubah Slot Jadwal" : "Tambah Slot Jadwal"}</h2>
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 mb-4">{error}</div>
+            )}
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Seri</label>
-                <input
-                  type="text"
-                  value={form.seri}
-                  onChange={(e) => handleInputChange('seri', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Tanggal</label>
+                <input type="date" value={form.tanggal} onChange={(e) => handleInputChange("tanggal", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" />
               </div>
               <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Nama Pelanggan</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Jam</label>
+                <input type="time" value={form.jam} onChange={(e) => handleInputChange("jam", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" />
               </div>
               <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Tanggal</label>
-                <input
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Banyak</label>
-                <input
-                  type="text"
-                  value={form.banyak}
-                  onChange={(e) => handleInputChange('banyak', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Titikul</label>
-                <input
-                  type="text"
-                  value={form.titik}
-                  onChange={(e) => handleInputChange('titik', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Status</label>
-                <select
-                  value={form.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter bg-white"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Jenis</label>
+                <select value={form.jenis} onChange={(e) => handleInputChange("jenis", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl bg-white">
+                  <option value="jemput">Penjemputan</option>
+                  <option value="antar">Pengantaran</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Kapasitas Slot</label>
+                <input type="number" min="1" value={form.kapasitas} onChange={(e) => handleInputChange("kapasitas", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" />
+              </div>
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-inter-semibold text-gray-700 hover:bg-gray-100"
-              >
+            <div className="mt-6 flex gap-3 justify-end">
+              <button type="button" onClick={() => { setShowForm(false); setEditId(null); setError(""); }} className="px-5 py-3 rounded-xl border font-semibold hover:bg-gray-100">
                 Batal
               </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                className="rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-inter-semibold text-white hover:bg-[#0f4d8a] transition"
-              >
-                Simpan Slot
+              <button type="button" onClick={handleSave} className="px-5 py-3 rounded-xl bg-[#1565C0] text-white font-semibold hover:bg-[#0f4d8a]">
+                Simpan
               </button>
             </div>
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full w-full text-left">
-            <thead>
-              <tr className="bg-gray-50/80">
-                {['Seri', 'Nama Pelanggan', 'Tanggal', 'Banyak', 'Titikul', 'Status'].map((label) => (
-                  <th
-                    key={label}
-                    className="px-4 py-3 text-xs font-inter-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {visibleSlots.map((item) => (
-                <tr key={item.seri} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{item.seri}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{item.name}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{item.date}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{item.banyak}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{item.titik}</td>
-                  <td className="px-4 py-4">
-                    <StatusBadge status={item.status} />
-                  </td>
+        {filteredSchedule.length === 0 ? (
+          <p className="text-center text-gray-500 py-8">Belum ada jadwal.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead>
+                <tr className="bg-gray-50">
+                  {["Tanggal", "Jam", "Jenis", "Kapasitas", "Terisi", "Status", "Aksi"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y">
+                {visibleSlots.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 text-sm">{item.tanggal}</td>
+                    <td className="px-4 py-4 text-sm">{item.jam}</td>
+                    <td className="px-4 py-4 text-sm capitalize">{item.jenis}</td>
+                    <td className="px-4 py-4 text-sm">{item.kapasitas}</td>
+                    <td className="px-4 py-4 text-sm">{item.terisi}/{item.kapasitas}</td>
+                    <td className="px-4 py-4">
+                      <StatusBadge status={item.terisi >= item.kapasitas ? "Total" : "Diproses"} />
+                    </td>
+                    <td className="px-4 py-4">
+                      <button type="button" onClick={() => openEdit(item)} className="text-sm text-[#1565C0] font-semibold hover:underline">
+                        Ubah
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-gray-600 font-poppins">Menampilkan {filteredSchedule.length} slot</div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-inter-semibold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:bg-gray-100"
-            >
-              Sebelumnya
-            </button>
-            <span className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-inter-semibold text-blue-700">{page}/{totalPages}</span>
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-inter-semibold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:bg-gray-100"
-            >
-              Berikutnya
-            </button>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-gray-600">{filteredSchedule.length} slot</p>
+          <div className="flex gap-2">
+            <button type="button" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="px-4 py-2 border rounded-xl disabled:opacity-50">Sebelumnya</button>
+            <span className="px-4 py-2 bg-blue-50 rounded-xl text-sm font-semibold">{page}/{totalPages}</span>
+            <button type="button" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)} className="px-4 py-2 border rounded-xl disabled:opacity-50">Berikutnya</button>
           </div>
         </div>
       </div>

@@ -1,241 +1,172 @@
-import { useEffect, useState } from 'react';
-import PageHeader from '../../DashboardAdmin/components/PageHeader';
-import StatusBadge from '../../DashboardAdmin/components/StatusBadge';
-
-const initialOrders = [
-  {
-    seri: '#00001',
-    name: 'Budi',
-    address: 'Jl. Melati No. 23',
-    date: '24 April 2024',
-    time: '09:00',
-    status: 'Diproses',
-  },
-  {
-    seri: '#00002',
-    name: 'Susi',
-    address: 'Jl. Melati No. 23',
-    date: '24 April 2024',
-    time: '10:30',
-    status: 'Diantar',
-  },
-  {
-    seri: '#00003',
-    name: 'Andi',
-    address: 'Jl. Melati No. 23',
-    date: '24 April 2024',
-    time: '11:15',
-    status: 'Selesai',
-  },
-  {
-    seri: '#00004',
-    name: 'Lina',
-    address: 'Jl. Melati No. 23',
-    date: '24 April 2024',
-    time: '12:45',
-    status: 'Total',
-  },
-];
-
-const statusOptions = ['Diproses', 'Diantar', 'Selesai', 'Total'];
-
-const initialForm = {
-  seri: '',
-  name: '',
-  address: '',
-  date: '',
-  time: '',
-  status: 'Diproses',
-};
+import { useState } from "react";
+import PageHeader from "../../DashboardAdmin/components/PageHeader";
+import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
+import { useData } from "../../context/DataContext";
+import { ADMIN_ORDER_STATUSES, formatRupiah } from "../../lib/constants";
 
 export default function Pesanan() {
-  const [query, setQuery] = useState('');
-  const [search, setSearch] = useState('');
-  const [orders, setOrders] = useState(initialOrders);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(initialForm);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setSearch(query);
-    }, 500);
-
-    return () => clearTimeout(timeout);
-  }, [query]);
+  const { orders, updateOrder, setOrderWeight, getOrderById } = useData();
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [editStatus, setEditStatus] = useState("");
+  const [beratInput, setBeratInput] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const filteredOrders = orders.filter((order) =>
-    [order.name, order.seri].some((value) =>
-      value.toLowerCase().includes(search.toLowerCase())
-    )
+    [order.nama, order.id].some((v) => v.toLowerCase().includes(query.toLowerCase()))
   );
 
-  const handleInputChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const openDetail = (order) => {
+    setSelected(order);
+    setEditStatus(order.status);
+    setBeratInput(order.berat != null ? String(order.berat) : "");
+    setMessage("");
+    setError("");
   };
 
   const handleSave = () => {
-    if (!form.seri || !form.name || !form.address || !form.date || !form.time) {
-      setMessage('Harap lengkapi semua data pesanan.');
-      return;
+    if (!selected) return;
+
+    updateOrder(selected.id, { status: editStatus });
+
+    if (beratInput.trim()) {
+      const result = setOrderWeight(selected.id, beratInput);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      setMessage(`Berat ${result.berat} Kg disimpan. Total: ${result.formatted}`);
+    } else {
+      setMessage("Data pesanan berhasil diperbarui.");
     }
 
-    setOrders((prev) => [form, ...prev]);
-    setForm(initialForm);
-    setShowForm(false);
-    setMessage('Pesanan berhasil ditambahkan.');
-    setTimeout(() => setMessage(''), 3000);
+    const updated = getOrderById(selected.id);
+    if (updated) setSelected(updated);
+    setTimeout(() => setMessage(""), 4000);
   };
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Kelola Pesanan" 
-        subtitle="Kelola pesanan laundry dengan mudah dan efisien"
-        showSearch={false} />
+      <PageHeader title="Kelola Pesanan" subtitle="Lihat dan kelola data pesanan pelanggan" showSearch={false} />
 
       <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="w-full sm:w-2/3">
-            <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Cari Nama atau Seri</label>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cari Nama atau Seri"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter shadow-sm"
-            />
-          </div>
-        </div>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Cari nama atau kode pesanan..."
+          className="w-full max-w-md px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200"
+        />
 
-        {message && (
-          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-            {message}
-          </div>
-        )}
-
-        {showForm && (
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-            <div className="flex items-center justify-between gap-4 mb-5">
-              <h2 className="text-lg font-inter-semibold text-gray-800">Form Tambah Pesanan</h2>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Tutup
-              </button>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Seri</label>
-                <input
-                  type="text"
-                  value={form.seri}
-                  onChange={(e) => handleInputChange('seri', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Nama Pelanggan</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Alamat</label>
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Tanggal</label>
-                <input
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Waktu Jemput</label>
-                <input
-                  type="time"
-                  value={form.time}
-                  onChange={(e) => handleInputChange('time', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-600 mb-2">Status</label>
-                <select
-                  value={form.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-300 font-inter bg-white"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>{status}</option>
+        {filteredOrders.length === 0 ? (
+          <p className="text-center text-gray-500 py-12">Daftar pesanan kosong.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead>
+                <tr className="bg-gray-50">
+                  {["Kode", "Pelanggan", "Layanan", "Jadwal", "Berat", "Total", "Status", "Aksi"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
                   ))}
-                </select>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-inter-semibold text-gray-700 hover:bg-gray-100"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                className="rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-inter-semibold text-white hover:bg-[#0f4d8a] transition"
-              >
-                Simpan Pesanan
-              </button>
-            </div>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 text-sm font-medium">{order.id}</td>
+                    <td className="px-4 py-4 text-sm">{order.nama}</td>
+                    <td className="px-4 py-4 text-sm">{order.layananLabel}</td>
+                    <td className="px-4 py-4 text-sm">{order.tanggal ? `${order.tanggal} ${order.jam}` : "-"}</td>
+                    <td className="px-4 py-4 text-sm">{order.berat != null ? `${order.berat} Kg` : "Menunggu"}</td>
+                    <td className="px-4 py-4 text-sm">{order.total != null ? formatRupiah(order.total) : "-"}</td>
+                    <td className="px-4 py-4"><StatusBadge status={order.status} /></td>
+                    <td className="px-4 py-4">
+                      <button
+                        type="button"
+                        onClick={() => openDetail(order)}
+                        className="text-sm text-[#1565C0] font-semibold hover:underline"
+                      >
+                        Detail
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full w-full text-left">
-            <thead>
-              <tr className="bg-gray-50/80">
-                {['No', 'Seri', 'Nama Pelanggan', 'Alamat', 'Tanggal', 'Waktu Jemput', 'Status'].map((label) => (
-                  <th
-                    key={label}
-                    className="px-4 py-3 text-xs font-inter-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredOrders.map((order, index) => (
-                <tr key={order.seri} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{index + 1}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{order.seri}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700 font-inter-medium">{order.name}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{order.address}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{order.date}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 font-poppins">{order.time}</td>
-                  <td className="px-4 py-4">
-                    <StatusBadge status={order.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
+
+      {selected && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
+          <div className="relative max-w-2xl mx-auto mt-12 px-4">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="px-6 py-5 border-b flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-xl">Detail Pesanan {selected.id}</h3>
+                  <p className="text-sm text-gray-500">{selected.nama} • {selected.nohp}</p>
+                </div>
+                <button type="button" onClick={() => setSelected(null)} className="p-2 hover:bg-gray-100 rounded-lg">✕</button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {error && <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">{error}</div>}
+                {message && <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">{message}</div>}
+
+                <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                  <p><span className="text-gray-500">Alamat:</span> {selected.alamat}</p>
+                  <p><span className="text-gray-500">Layanan:</span> {selected.layananLabel}</p>
+                  <p><span className="text-gray-500">Tarif:</span> Rp {selected.tarifPerKg.toLocaleString("id-ID")}/Kg</p>
+                  <p><span className="text-gray-500">Jadwal:</span> {selected.tanggal ? `${selected.tanggal} ${selected.jam}` : "Belum dipilih"}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Status Pesanan</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    className="w-full px-4 py-2.5 border rounded-xl bg-white"
+                  >
+                    {ADMIN_ORDER_STATUSES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                  <label className="block text-sm font-semibold text-blue-900 mb-2">Input Berat Laundry (Kg)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={beratInput}
+                    onChange={(e) => { setBeratInput(e.target.value); setError(""); }}
+                    placeholder="Contoh: 3.5"
+                    className="w-full px-4 py-2.5 border rounded-xl bg-white"
+                  />
+                  {beratInput && selected.tarifPerKg && (
+                    <p className="mt-2 text-sm text-blue-800">
+                      Estimasi: {beratInput} Kg × Rp {selected.tarifPerKg.toLocaleString("id-ID")} ={" "}
+                      {formatRupiah(Number(beratInput) * selected.tarifPerKg)}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t flex gap-3 justify-end">
+                <button type="button" onClick={() => setSelected(null)} className="px-5 py-2.5 rounded-xl border hover:bg-gray-50 font-semibold">
+                  Tutup
+                </button>
+                <button type="button" onClick={handleSave} className="px-5 py-2.5 rounded-xl bg-[#1565C0] text-white font-semibold hover:bg-[#0f4d8a]">
+                  Simpan Perubahan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -18,6 +18,8 @@ const statusStyles = {
   // Keuangan
   Lunas: "bg-green-100 text-green-700 border border-green-200",
   "Belum Lunas": "bg-red-100 text-red-700 border border-red-200",
+
+  "Menunggu Penimbangan": "bg-orange-100 text-orange-700 border border-orange-200",
 };
 
 export default function StatusBadge({ status, className = "" }) {
