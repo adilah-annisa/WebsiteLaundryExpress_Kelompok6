@@ -1,14 +1,22 @@
 import { useState } from "react";
-import { IoCheckmarkCircleOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import PageHeader from "../../DashboardAdmin/components/PageHeader";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
+import { useToast } from "../../context/ToastContext";
 import { LAYANAN_OPTIONS } from "../../lib/constants";
+import laundryServices from "../../data/LaundryServices.json";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Select from "../../components/ui/Select";
+import { Textarea } from "../../components/ui/Select";
+import { Card, CardBody, CardHeader } from "../../components/ui/Card";
+import { Alert } from "../../components/ui/Toast";
+import Badge from "../../components/ui/Badge";
 
 export default function Pemesanan() {
   const { user } = useAuth();
   const { createOrder, getCustomerById } = useData();
+  const { showToast } = useToast();
   const customer = getCustomerById(user?.customerId);
 
   const [formData, setFormData] = useState({
@@ -17,15 +25,16 @@ export default function Pemesanan() {
     alamat: customer?.address || "",
     layanan: "",
     pengantaran: "jemput",
+    tanggal: "",
+    jam: "",
     catatan: "",
   });
 
   const [error, setError] = useState("");
-  const [toast, setToast] = useState("");
   const [lastOrderId, setLastOrderId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const layananDetails = LAYANAN_OPTIONS.find((item) => item.value === formData.layanan);
-  const selectedDelivery = formData.pengantaran === "jemput" ? "Jemput ke Rumah" : "Antar ke Laundry";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,185 +42,124 @@ export default function Pemesanan() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!formData.nama.trim()) {
-      setError("Nama lengkap wajib diisi.");
-      return;
-    }
-    if (!formData.nohp.trim()) {
-      setError("Nomor HP wajib diisi.");
-      return;
-    }
-    if (!formData.alamat.trim()) {
-      setError("Alamat wajib diisi.");
-      return;
-    }
-    if (!formData.layanan) {
-      setError("Jenis layanan wajib dipilih.");
-      return;
-    }
-
-    const order = createOrder({
-      customerId: user.customerId,
-      nama: formData.nama.trim(),
-      nohp: formData.nohp.trim(),
-      alamat: formData.alamat.trim(),
-      layanan: formData.layanan,
-      pengantaran: formData.pengantaran,
-      catatan: formData.catatan.trim(),
-    });
-
-    setLastOrderId(order.id);
-    setToast(`Pesanan ${order.id} berhasil dibuat! Silakan pilih jadwal antar-jemput.`);
+  const handleReset = () => {
     setFormData({
       nama: customer?.name || "",
       nohp: customer?.phone || "",
       alamat: customer?.address || "",
       layanan: "",
       pengantaran: "jemput",
+      tanggal: "",
+      jam: "",
       catatan: "",
     });
-    setTimeout(() => setToast(""), 6000);
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.nama.trim()) return setError("Nama lengkap wajib diisi.");
+    if (!formData.nohp.trim()) return setError("Nomor HP wajib diisi.");
+    if (!formData.alamat.trim()) return setError("Alamat wajib diisi.");
+    if (!formData.layanan) return setError("Jenis layanan wajib dipilih.");
+
+    setLoading(true);
+    try {
+      const order = createOrder({
+        customerId: user.customerId,
+        nama: formData.nama.trim(),
+        nohp: formData.nohp.trim(),
+        alamat: formData.alamat.trim(),
+        layanan: formData.layanan,
+        pengantaran: formData.pengantaran,
+        catatan: [formData.catatan.trim(), formData.tanggal && formData.jam ? `Preferensi jadwal: ${formData.tanggal} ${formData.jam}` : ""].filter(Boolean).join(" | "),
+      });
+      setLastOrderId(order.id);
+      showToast(`Pesanan ${order.id} berhasil dibuat!`, "success");
+      handleReset();
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto min-h-screen space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      {toast && (
-        <div className="fixed top-4 right-4 z-50 rounded-xl bg-green-600 text-white px-5 py-3 text-sm font-inter-semibold shadow-lg flex items-center gap-2 max-w-sm">
-          <IoCheckmarkCircleOutline className="text-xl shrink-0" />
-          <span>{toast}</span>
-        </div>
-      )}
-
-      <PageHeader
-        title="Pemesanan Laundry"
-        subtitle="Buat pesanan laundry. Berat akan ditimbang oleh pemilik setelah cucian diterima."
-      />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
-        </div>
-      )}
+    <div className="max-w-6xl mx-auto space-y-6">
+      {error && <Alert variant="error">{error}</Alert>}
 
       {lastOrderId && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <Alert variant="success">
           Pesanan <strong>{lastOrderId}</strong> tersimpan.{" "}
-          <Link to="/pelanggan/jadwal" className="font-semibold underline">
-            Pilih jadwal antar-jemput →
-          </Link>
-        </div>
+          <Link to="/pelanggan/jadwal" className="underline font-semibold">Pilih slot jadwal →</Link>
+        </Alert>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[1.3fr_minmax(240px,320px)] items-start">
-        <section className="space-y-4">
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-700 mb-2">
-                  Nama Lengkap <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="nama"
-                  value={formData.nama}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3b6fd8]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-700 mb-2">
-                  Nomor HP <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="nohp"
-                  value={formData.nohp}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3b6fd8]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-700 mb-2">
-                  Jenis Layanan <span className="text-red-500">*</span>
-                </label>
-                <select
+      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-bold text-slate-900">Form Pemesanan Laundry</h2>
+            <p className="text-sm text-slate-500">Isi data dan pilih jadwal antar-jemput</p>
+          </CardHeader>
+          <CardBody>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input label="Nama Lengkap *" name="nama" value={formData.nama} onChange={handleChange} />
+                <Input label="Nomor HP *" name="nohp" type="tel" value={formData.nohp} onChange={handleChange} />
+                <Select
+                  label="Jenis Layanan *"
                   name="layanan"
                   value={formData.layanan}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3b6fd8] cursor-pointer"
-                >
-                  <option value="">Pilih Layanan</option>
-                  {LAYANAN_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label} (Rp {option.price.toLocaleString("id-ID")}/Kg)
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-inter-semibold text-gray-700 mb-2">
-                  Metode <span className="text-red-500">*</span>
-                </label>
-                <select
+                  options={[{ value: "", label: "Pilih layanan" }, ...LAYANAN_OPTIONS.map((l) => ({ value: l.value, label: `${l.label} — Rp ${l.price.toLocaleString("id-ID")}/Kg` }))]}
+                />
+                <Select
+                  label="Metode *"
                   name="pengantaran"
                   value={formData.pengantaran}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3b6fd8] cursor-pointer"
-                >
-                  <option value="jemput">Jemput ke Rumah</option>
-                  <option value="antar">Antar ke Laundry</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-inter-semibold text-gray-700 mb-2">
-                  Alamat <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="alamat"
-                  value={formData.alamat}
-                  onChange={handleChange}
-                  rows="3"
-                  className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3b6fd8] resize-none"
+                  options={[
+                    { value: "jemput", label: "Jemput ke Rumah" },
+                    { value: "antar", label: "Antar ke Laundry" },
+                  ]}
                 />
+                <Input label="Preferensi Tanggal" name="tanggal" type="date" value={formData.tanggal} onChange={handleChange} hint="Slot final dipilih di halaman Jadwal" />
+                <Input label="Preferensi Waktu" name="jam" type="time" value={formData.jam} onChange={handleChange} />
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-inter-semibold text-gray-700 mb-2">Catatan (Opsional)</label>
-                <textarea
-                  name="catatan"
-                  value={formData.catatan}
-                  onChange={handleChange}
-                  rows="3"
-                  className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3b6fd8] resize-none"
-                />
+              <Textarea label="Alamat Lengkap *" name="alamat" rows={3} value={formData.alamat} onChange={handleChange} />
+              <Textarea label="Catatan (Opsional)" name="catatan" rows={2} value={formData.catatan} onChange={handleChange} />
+
+              <div className="rounded-xl bg-amber-50 border border-amber-100 p-4 text-sm text-amber-800">
+                Biaya final dihitung setelah penimbangan oleh pemilik laundry.
               </div>
-            </div>
 
-            <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
-              Biaya final dihitung setelah pemilik menimbang cucian. Status biaya: <strong>Menunggu Penimbangan</strong>.
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-[#3b6fd8] to-[#1565C0] text-white px-6 py-3 rounded-2xl font-inter-semibold hover:shadow-lg transition-all"
-            >
-              Kirim Pesanan
-            </button>
-          </form>
-        </section>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="submit" loading={loading} className="flex-1">Simpan Pesanan</Button>
+                <Button type="button" variant="secondary" onClick={handleReset}>Reset</Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
 
         <aside className="space-y-4">
-          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Ringkasan</p>
-            <div className="mt-4 space-y-3 text-sm">
-              <p><span className="text-slate-500">Layanan:</span> {layananDetails?.label || "-"}</p>
-              <p><span className="text-slate-500">Metode:</span> {selectedDelivery}</p>
-              <p><span className="text-slate-500">Tarif:</span> {layananDetails ? `Rp ${layananDetails.price.toLocaleString("id-ID")}/Kg` : "-"}</p>
-              <p><span className="text-slate-500">Estimasi:</span> {layananDetails?.estimate || "-"}</p>
-            </div>
-          </div>
+          <Card>
+            <CardHeader><h3 className="font-semibold text-slate-900">Pilihan Layanan</h3></CardHeader>
+            <CardBody className="space-y-2">
+              {laundryServices.map((s) => (
+                <div key={s.value} className={`p-3 rounded-xl border text-sm cursor-pointer transition-all ${formData.layanan === s.value ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-blue-300"}`} onClick={() => setFormData((p) => ({ ...p, layanan: s.value }))}>
+                  <p className="font-semibold text-slate-800">{s.label}</p>
+                  <p className="text-xs text-slate-500">Rp {s.price.toLocaleString("id-ID")}/Kg · {s.estimate}</p>
+                </div>
+              ))}
+            </CardBody>
+          </Card>
+          {layananDetails && (
+            <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-0">
+              <CardBody>
+                <Badge variant="primary" className="bg-white/20 text-white border-white/30">Ringkasan</Badge>
+                <p className="font-bold mt-3">{layananDetails.label}</p>
+                <p className="text-sm text-blue-100 mt-1">Estimasi: {layananDetails.estimate}</p>
+              </CardBody>
+            </Card>
+          )}
         </aside>
       </div>
     </div>

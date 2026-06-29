@@ -1,0 +1,5 @@
+[
+  { "id": "#P001", "customerId": "C001", "nama": "Budi Santoso", "layananLabel": "Cuci Setrika", "status": "Sedang Disetrika", "berat": 3, "total": 21000, "tanggal": "2025-06-18", "jam": "08:00" },
+  { "id": "#P002", "customerId": "C001", "nama": "Budi Santoso", "layananLabel": "Cuci Kering", "status": "Diproses", "berat": null, "total": null, "tanggal": "", "jam": "" },
+  { "id": "#P003", "customerId": "C002", "nama": "Siti Aminah", "layananLabel": "Dry Clean", "status": "Selesai", "berat": 2, "total": 30000, "tanggal": "2025-06-16", "jam": "14:00" }
+]

@@ -9,6 +9,8 @@ import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
 import { Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { formatRupiah } from "../../lib/constants";
+import RoleShortcuts from "../../components/RoleShortcuts";
+import { Card, CardBody, CardHeader } from "../../components/ui/Card";
 
 const iconMap = {
   IoShirtOutline,
@@ -28,7 +30,8 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-screen-2xl mx-auto">
+      <RoleShortcuts role="admin" />
       <div className="rounded-2xl bg-linear-to-r from-[#1565C0] to-[#3b6fd8] p-6 text-white shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -76,14 +79,12 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b flex items-center justify-between">
-          <h2 className="font-inter-semibold text-lg text-gray-800">Pesanan Terbaru</h2>
-          <Link className="text-sm text-[#3b6fd8] font-inter-medium hover:underline" to="/dashboard/pesanan">
-            Lihat Semua
-          </Link>
-        </div>
-        <div className="overflow-x-auto">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <h2 className="font-semibold text-lg text-slate-900">Pesanan Terbaru</h2>
+          <Link className="text-sm text-blue-600 font-medium hover:underline" to="/dashboard/pesanan">Lihat Semua</Link>
+        </CardHeader>
+        <CardBody className="p-0">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/50">
@@ -104,8 +105,8 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </div>
   );
 }

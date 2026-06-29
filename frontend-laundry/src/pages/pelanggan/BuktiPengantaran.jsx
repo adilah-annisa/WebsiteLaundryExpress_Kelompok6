@@ -1,21 +1,45 @@
-import { useState } from "react";
-import {
-  IoCalendarOutline,
-  IoTimeOutline,
-  IoImageOutline,
-  IoMapOutline,
-  IoPersonOutline,
-} from "react-icons/io5";
+import { useMemo, useState } from "react";
+import { IoImageOutline } from "react-icons/io5";
+import Timeline from "../../components/Timeline";
+import Select from "../../components/ui/Select";
+import { Card, CardBody, CardHeader } from "../../components/ui/Card";
+import EmptyState from "../../components/ui/EmptyState";
+import StatusBadge from "../../components/StatusBadge";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
-import StatusBadge from "../../components/StatusBadge";
 
 function formatWaktu(iso) {
   if (!iso) return "-";
-  return new Date(iso).toLocaleString("id-ID", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+  return new Date(iso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" });
+}
+
+function buildTimeline(order) {
+  const steps = [
+    { id: "order", title: "Pesanan dibuat", time: formatWaktu(order.createdAt), done: true },
+    {
+      id: "schedule",
+      title: "Jadwal dipilih",
+      time: order.tanggal ? `${order.tanggal} pukul ${order.jam}` : "Belum dipilih",
+      done: Boolean(order.slotId),
+    },
+    { id: "process", title: "Laundry diproses", done: !["Diproses"].includes(order.status) },
+    { id: "delivery", title: "Laundry diantar", done: ["Diantar", "Selesai"].includes(order.status) },
+  ];
+
+  if (order.bukti?.foto) {
+    steps.push({
+      id: "proof",
+      title: "Bukti pengantaran",
+      time: formatWaktu(order.bukti.waktu),
+      description: order.bukti.catatan || `Diantar oleh ${order.bukti.kurirNama || "Kurir"}`,
+      image: order.bukti.foto,
+      done: true,
+    });
+  } else {
+    steps.push({ id: "proof", title: "Menunggu bukti pengantaran", done: false });
+  }
+
+  return steps;
 }
 
 export default function BuktiPengantaran() {
@@ -23,111 +47,81 @@ export default function BuktiPengantaran() {
   const { getOrdersForCustomer } = useData();
   const orders = getOrdersForCustomer(user.customerId);
 
-  const ordersWithDelivery = orders.filter(
-    (o) => o.status === "Selesai" || o.status === "Diantar" || o.bukti
-  );
-
-  const [selectedKode, setSelectedKode] = useState(ordersWithDelivery[0]?.id || "");
+  const [selectedKode, setSelectedKode] = useState(orders[0]?.id || "");
   const order = orders.find((o) => o.id === selectedKode);
+  const hasBukti = order?.bukti?.foto;
+
+  const timelineItems = useMemo(() => (order ? buildTimeline(order) : []), [order]);
 
   if (orders.length === 0) {
     return (
-      <div className="w-full max-w-screen-xl mx-auto px-4 py-12 text-center">
-        <p className="text-gray-600">Data pesanan tidak ditemukan.</p>
+      <div className="w-full max-w-screen-xl mx-auto px-4 py-12">
+        <EmptyState title="Data pesanan tidak ditemukan" description="Buat pesanan terlebih dahulu." />
       </div>
     );
   }
 
-  const hasBukti = order?.bukti?.foto;
-
   return (
-    <div className="w-full max-w-screen-xl mx-auto min-h-screen space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-inter-semibold text-slate-900">Bukti Pengantaran</h1>
-        <p className="mt-2 text-sm text-slate-500">Lihat bukti pengantaran laundry ke alamat Anda.</p>
-
-        <div className="mt-5">
-          <label className="block text-sm font-inter-semibold text-gray-700 mb-2">Pilih Pesanan</label>
-          <select
+    <div className="w-full max-w-screen-xl mx-auto space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <Card>
+        <CardHeader title="Bukti Pengantaran" subtitle="Lihat timeline dan bukti pengantaran laundry." />
+        <CardBody>
+          <Select
+            label="Pilih Pesanan"
             value={selectedKode}
             onChange={(e) => setSelectedKode(e.target.value)}
-            className="w-full border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-200 bg-white"
-          >
-            {orders.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.id} — {item.layananLabel}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+            options={orders.map((item) => ({
+              value: item.id,
+              label: `${item.id} — ${item.layananLabel}`,
+            }))}
+          />
+        </CardBody>
+      </Card>
 
-      {order && !hasBukti && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
-          <IoImageOutline className="text-4xl text-amber-500 mx-auto mb-3" />
-          <p className="font-inter-semibold text-amber-900">Pengantaran belum selesai</p>
-          <p className="text-sm text-amber-700 mt-2">
-            Bukti pengantaran belum tersedia. Kurir akan mengunggah foto setelah laundry diantar.
-          </p>
-          <StatusBadge status={order.status} className="mt-4" />
-        </div>
-      )}
-
-      {order && hasBukti && (
+      {order && (
         <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="font-inter-semibold text-lg">Detail Pengantaran</h2>
-              <StatusBadge status="Selesai" />
-            </div>
+          <Card>
+            <CardHeader title="Timeline Pengantaran" subtitle={`Pesanan ${order.id}`} />
+            <CardBody>
+              {!hasBukti && (
+                <EmptyState
+                  icon={IoImageOutline}
+                  title="Pengantaran belum selesai"
+                  description="Bukti pengantaran belum tersedia. Kurir akan mengunggah foto setelah laundry diantar."
+                  action={<StatusBadge status={order.status} />}
+                />
+              )}
+              <Timeline items={timelineItems} />
+            </CardBody>
+          </Card>
 
-            <div className="rounded-2xl overflow-hidden border border-gray-200">
-              <img
-                src={order.bukti.foto}
-                alt={`Bukti pengantaran ${order.id}`}
-                className="w-full max-h-96 object-cover"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <IoCalendarOutline className="text-xl text-slate-600" />
-                <div>
-                  <p className="text-xs text-slate-500">Waktu Pengantaran</p>
-                  <p className="font-semibold text-sm">{formatWaktu(order.bukti.waktu)}</p>
+          <Card className="h-fit">
+            <CardHeader title="Detail Pesanan" />
+            <CardBody className="space-y-3 text-sm">
+              <div className="flex justify-between gap-2">
+                <span className="text-slate-500">Kode</span>
+                <span className="font-semibold">{order.id}</span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-slate-500">Layanan</span>
+                <span>{order.layananLabel}</span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-slate-500">Alamat</span>
+                <span className="text-right">{order.alamat}</span>
+              </div>
+              <div className="flex justify-between gap-2 items-center">
+                <span className="text-slate-500">Status</span>
+                <StatusBadge status={order.status} />
+              </div>
+              {hasBukti && (
+                <div className="pt-3 border-t border-slate-100">
+                  <p className="text-xs text-slate-500">Waktu pengantaran</p>
+                  <p className="font-semibold mt-1">{formatWaktu(order.bukti.waktu)}</p>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <IoPersonOutline className="text-xl text-slate-600" />
-                <div>
-                  <p className="text-xs text-slate-500">Kurir</p>
-                  <p className="font-semibold text-sm">{order.bukti.kurirNama}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
-              <IoMapOutline className="text-xl text-slate-600 mt-1" />
-              <div>
-                <p className="text-xs text-slate-500">Alamat Pengantaran</p>
-                <p className="font-semibold text-sm">{order.alamat}</p>
-              </div>
-            </div>
-
-            {order.bukti.catatan && (
-              <p className="text-sm text-slate-600 italic">Catatan: {order.bukti.catatan}</p>
-            )}
-          </div>
-
-          <aside className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm h-fit">
-            <p className="text-xs uppercase text-slate-500">Informasi Pesanan</p>
-            <p className="mt-2 font-semibold">{order.id}</p>
-            <p className="text-sm text-slate-600 mt-1">{order.layananLabel}</p>
-            <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
-              <IoTimeOutline />
-              {formatWaktu(order.bukti.waktu)}
-            </div>
-          </aside>
+              )}
+            </CardBody>
+          </Card>
         </div>
       )}
     </div>

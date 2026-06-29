@@ -23,7 +23,7 @@ export const AUTH_USERS = {
     password: "admin123",
     role: "admin",
     name: "Pemilik Laundry",
-    redirect: "/",
+    redirect: "/dashboard",
   },
   pelanggan: {
     username: "pelanggan",

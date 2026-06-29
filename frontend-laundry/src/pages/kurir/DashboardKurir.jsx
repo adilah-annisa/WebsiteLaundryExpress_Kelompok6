@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import RoleShortcuts from "../../components/RoleShortcuts";
+import { Card, CardBody, CardHeader } from "../../components/ui/Card";
 import { useData } from "../../context/DataContext";
 import StatusBadge from "../../components/StatusBadge";
 import StatCard from "../../components/StatCard";
@@ -21,7 +23,8 @@ export default function DashboardKurir() {
   ];
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto space-y-8">
+    <div className="w-full max-w-screen-2xl mx-auto space-y-8">
+      <RoleShortcuts role="kurir" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} icon={stat.icon} label={stat.label} value={stat.value} color={stat.color} bgIcon={stat.bgIcon} />

@@ -1,21 +1,9 @@
-import { useState } from "react";
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
-import { Outlet } from "react-router-dom";
-import '../DashboardAdmin/assets/tailwind.css';
+import AdminLayout from "./AdminLayout";
+import Sidebar from "../components/layout/Sidebar";
+import { adminMenuItems } from "../config/adminMenu";
 
 export default function MainLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
-    <div className="min-h-screen bg-[#f5f7fb] font-poppins">
-      <div className="flex min-h-screen">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-auto">
-          <Header onMenuClick={() => setSidebarOpen(true)} />
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    <AdminLayout sidebar={Sidebar} menuItems={adminMenuItems} brand="Admin Panel" />
   );
 }

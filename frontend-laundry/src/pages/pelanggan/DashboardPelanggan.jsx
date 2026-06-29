@@ -4,9 +4,17 @@ import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import StatusBadge from "../../components/StatusBadge";
 import StatCard from "../../components/StatCard";
-import { formatRupiah } from "../../lib/constants";
+import RoleShortcuts from "../../components/RoleShortcuts";
+import { Card, CardBody, CardHeader } from "../../components/ui/Card";
 
 const iconMap = { IoShirtOutline, IoCubeOutline, IoTimeOutline, IoCloseCircleOutline };
+const formatRupiah = (angka) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(angka ?? 0);
+};
 
 export default function DashboardPelanggan() {
   const { user } = useAuth();
@@ -21,7 +29,8 @@ export default function DashboardPelanggan() {
   ];
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto space-y-8">
+    <div className="w-full max-w-screen-2xl mx-auto space-y-8">
+      <RoleShortcuts role="pelanggan" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = iconMap[stat.iconName];

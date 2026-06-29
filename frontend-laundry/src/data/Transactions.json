@@ -1,0 +1,4 @@
+[
+  { "id": "T001", "orderId": "#P001", "seri": "#P001", "name": "Budi Santoso", "date": "2025-06-18", "amount": "Rp 21.000", "amountNum": 21000, "status": "Belum Lunas" },
+  { "id": "T002", "orderId": "#P003", "seri": "#P003", "name": "Siti Aminah", "date": "2025-06-16", "amount": "Rp 30.000", "amountNum": 30000, "status": "Lunas" }
+]

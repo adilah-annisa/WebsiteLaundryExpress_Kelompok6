@@ -1,0 +1,5 @@
+[
+  { "id": "N1", "title": "Pesanan Baru", "message": "Pesanan #P002 menunggu penjadwalan jemput.", "type": "order", "read": false, "time": "5 menit lalu" },
+  { "id": "N2", "title": "Pembayaran Lunas", "message": "Transaksi #P003 telah lunas.", "type": "payment", "read": true, "time": "1 jam lalu" },
+  { "id": "N3", "title": "Jadwal Kurir", "message": "3 tugas penjemputan hari ini.", "type": "schedule", "read": false, "time": "Hari ini" }
+]

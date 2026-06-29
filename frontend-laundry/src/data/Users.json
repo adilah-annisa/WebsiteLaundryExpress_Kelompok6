@@ -1,0 +1,5 @@
+[
+  { "id": "U001", "username": "admin", "password": "admin123", "role": "admin", "name": "Pemilik Laundry", "email": "admin@laundryexpress.id" },
+  { "id": "U002", "username": "pelanggan", "password": "pelanggan123", "role": "pelanggan", "name": "Budi Santoso", "customerId": "C001", "email": "budi@example.com" },
+  { "id": "U003", "username": "kurir", "password": "kurir123", "role": "kurir", "name": "Ahmad Rizky", "email": "kurir@laundryexpress.id" }
+]

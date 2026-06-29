@@ -5,7 +5,10 @@ import Loading from "./components/Loading";
 import { useAuth } from "./context/AuthContext";
 
 const MainLayout = lazy(() => import("./layouts/MainLayout"));
+const CustomerLayout = lazy(() => import("./layouts/CustomerLayout"));
+const CourierLayout = lazy(() => import("./layouts/CourierLayout"));
 const AuthLayout = lazy(() => import("./layouts/AuthLayout"));
+const ErrorLayout = lazy(() => import("./layouts/ErrorLayout"));
 
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const Pesanan = lazy(() => import("./pages/admin/Pesanan"));
@@ -13,20 +16,23 @@ const Jadwal = lazy(() => import("./pages/admin/Jadwal"));
 const Keuangan = lazy(() => import("./pages/admin/Keuangan"));
 const Laporan = lazy(() => import("./pages/admin/Laporan"));
 const PelangganAdmin = lazy(() => import("./pages/admin/Pelanggan"));
+const Pengaturan = lazy(() => import("./pages/admin/Pengaturan"));
 
-const PelangganLayout = lazy(() => import("./layouts/PelangganLayout"));
 const DashboardPelanggan = lazy(() => import("./pages/pelanggan/DashboardPelanggan"));
 const Pemesanan = lazy(() => import("./pages/pelanggan/Pemesanan"));
+const DetailBiaya = lazy(() => import("./pages/pelanggan/DetailBiaya"));
 const StatusLaundry = lazy(() => import("./pages/pelanggan/StatusLaundry"));
 const RiwayatTransaksi = lazy(() => import("./pages/pelanggan/RiwayatTransaksi"));
+const KonfirmasiLaundry = lazy(() => import("./pages/pelanggan/KonfirmasiLaundry"));
 const BuktiPengantaran = lazy(() => import("./pages/pelanggan/BuktiPengantaran"));
 const PelangganJadwal = lazy(() => import("./pages/pelanggan/Jadwal"));
+const ProfilPelanggan = lazy(() => import("./pages/pelanggan/Profil"));
 
-const KurirLayout = lazy(() => import("./layouts/KurirLayout"));
 const DashboardKurir = lazy(() => import("./pages/kurir/DashboardKurir"));
 const Jemput = lazy(() => import("./pages/kurir/Jemput"));
 const Antar = lazy(() => import("./pages/kurir/Antar"));
 const UploadBukti = lazy(() => import("./pages/kurir/UploadBukti"));
+const ProfilKurir = lazy(() => import("./pages/kurir/ProfilKurir"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/auth/Login"));
@@ -44,18 +50,14 @@ function RootRedirect() {
 function LoginRoute() {
   const { user, ready, isAuthenticated } = useAuth();
   if (!ready) return <Loading />;
-  if (isAuthenticated) {
-    return <Navigate to={user.redirect || "/"} replace />;
-  }
+  if (isAuthenticated) return <Navigate to={user.redirect || "/dashboard"} replace />;
   return <Login />;
 }
 
 function RegisterRoute() {
   const { ready, isAuthenticated, user } = useAuth();
   if (!ready) return <Loading />;
-  if (isAuthenticated) {
-    return <Navigate to={user.redirect || "/"} replace />;
-  }
+  if (isAuthenticated) return <Navigate to={user.redirect || "/dashboard"} replace />;
   return <Register />;
 }
 
@@ -84,9 +86,9 @@ export default function App() {
           <Route path="keuangan" element={<Keuangan />} />
           <Route path="laporan" element={<Laporan />} />
           <Route path="pelanggan-admin" element={<PelangganAdmin />} />
+          <Route path="pengaturan" element={<Pengaturan />} />
         </Route>
 
-        {/* Legacy admin paths redirect */}
         <Route path="/pesanan" element={<Navigate to="/dashboard/pesanan" replace />} />
         <Route path="/jadwal" element={<Navigate to="/dashboard/jadwal" replace />} />
         <Route path="/keuangan" element={<Navigate to="/dashboard/keuangan" replace />} />
@@ -97,23 +99,26 @@ export default function App() {
           path="/pelanggan"
           element={
             <ProtectedRoute allowedRoles={["pelanggan"]}>
-              <PelangganLayout />
+              <CustomerLayout />
             </ProtectedRoute>
           }
         >
           <Route index element={<DashboardPelanggan />} />
           <Route path="pemesanan" element={<Pemesanan />} />
           <Route path="jadwal" element={<PelangganJadwal />} />
+          <Route path="biaya" element={<DetailBiaya />} />
           <Route path="status" element={<StatusLaundry />} />
           <Route path="riwayat" element={<RiwayatTransaksi />} />
+          <Route path="konfirmasi" element={<KonfirmasiLaundry />} />
           <Route path="bukti" element={<BuktiPengantaran />} />
+          <Route path="profil" element={<ProfilPelanggan />} />
         </Route>
 
         <Route
           path="/kurir"
           element={
             <ProtectedRoute allowedRoles={["kurir"]}>
-              <KurirLayout />
+              <CourierLayout />
             </ProtectedRoute>
           }
         >
@@ -121,9 +126,12 @@ export default function App() {
           <Route path="jemput" element={<Jemput />} />
           <Route path="antar" element={<Antar />} />
           <Route path="bukti" element={<UploadBukti />} />
+          <Route path="profil" element={<ProfilKurir />} />
         </Route>
 
-        <Route path="*" element={<NotFound />} />
+        <Route element={<ErrorLayout />}>
+          <Route path="*" element={<NotFound />} />
+        </Route>
       </Routes>
     </Suspense>
   );

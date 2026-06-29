@@ -1,0 +1,6 @@
+[
+  { "value": "cuci-kering", "label": "Cuci Kering", "price": 3000, "estimate": "2-3 hari", "icon": "shirt" },
+  { "value": "cuci-setrika", "label": "Cuci Setrika", "price": 7000, "estimate": "1-2 hari", "icon": "sparkles" },
+  { "value": "setrika-saja", "label": "Setrika Saja", "price": 4000, "estimate": "1 hari", "icon": "iron" },
+  { "value": "dry-clean", "label": "Dry Clean", "price": 15000, "estimate": "3-4 hari", "icon": "coat" }
+]
