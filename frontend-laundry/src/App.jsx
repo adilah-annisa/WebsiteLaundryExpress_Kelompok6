@@ -15,7 +15,6 @@ const Pesanan = lazy(() => import("./pages/admin/Pesanan"));
 const Jadwal = lazy(() => import("./pages/admin/Jadwal"));
 const Keuangan = lazy(() => import("./pages/admin/Keuangan"));
 const Laporan = lazy(() => import("./pages/admin/Laporan"));
-const PelangganAdmin = lazy(() => import("./pages/admin/Pelanggan"));
 const Pengaturan = lazy(() => import("./pages/admin/Pengaturan"));
 
 const DashboardPelanggan = lazy(() => import("./pages/pelanggan/DashboardPelanggan"));
@@ -85,7 +84,6 @@ export default function App() {
           <Route path="jadwal" element={<Jadwal />} />
           <Route path="keuangan" element={<Keuangan />} />
           <Route path="laporan" element={<Laporan />} />
-          <Route path="pelanggan-admin" element={<PelangganAdmin />} />
           <Route path="pengaturan" element={<Pengaturan />} />
         </Route>
 
@@ -93,7 +91,6 @@ export default function App() {
         <Route path="/jadwal" element={<Navigate to="/dashboard/jadwal" replace />} />
         <Route path="/keuangan" element={<Navigate to="/dashboard/keuangan" replace />} />
         <Route path="/laporan" element={<Navigate to="/dashboard/laporan" replace />} />
-        <Route path="/pelanggan-admin" element={<Navigate to="/dashboard/pelanggan-admin" replace />} />
 
         <Route
           path="/pelanggan"
