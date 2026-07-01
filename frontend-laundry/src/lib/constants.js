@@ -5,6 +5,12 @@ export const LAYANAN_OPTIONS = [
   { value: "dry-clean", label: "Dry Clean", price: 15000, estimate: "3-4 hari" },
 ];
 
+export const PENGANTARAN_OPTIONS = [
+  { value: "jemput", label: "Jemput ke Rumah" },
+  { value: "antar", label: "Antar ke Laundry" },
+  { value: "antar-jemput", label: "Antar-Jemput" },
+];
+
 export const ORDER_STATUSES = [
   "Diproses",
   "Dijemput",

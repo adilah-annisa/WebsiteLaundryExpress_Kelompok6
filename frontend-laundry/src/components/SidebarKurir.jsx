@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdSpaceDashboard, MdLogout } from "react-icons/md";
-import { HiArrowUpTray, HiArrowDownTray } from "react-icons/hi2";
+import { GrDeliver } from "react-icons/gr";
 import { IoCloudUploadOutline, IoClose } from "react-icons/io5";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -13,8 +13,7 @@ export default function SidebarKurir({ open = false, onClose }) {
 
     const menuItems = [
         { icon: MdSpaceDashboard, label: "Dashboard", path: "/kurir" },
-        { icon: HiArrowUpTray, label: "Penjemputan", path: "/kurir/jemput" },
-        { icon: HiArrowDownTray, label: "Pengantaran", path: "/kurir/antar" },
+        { icon: GrDeliver, label: "Antar-Jemput", path: "/kurir/antar-jemput" },
         { icon: IoCloudUploadOutline, label: "Upload Bukti", path: "/kurir/bukti" },
     ];
 

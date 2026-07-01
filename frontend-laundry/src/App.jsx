@@ -20,16 +20,12 @@ const Pengaturan = lazy(() => import("./pages/admin/Pengaturan"));
 const DashboardPelanggan = lazy(() => import("./pages/pelanggan/DashboardPelanggan"));
 const Pemesanan = lazy(() => import("./pages/pelanggan/Pemesanan"));
 const DetailBiaya = lazy(() => import("./pages/pelanggan/DetailBiaya"));
-const StatusLaundry = lazy(() => import("./pages/pelanggan/StatusLaundry"));
-const RiwayatTransaksi = lazy(() => import("./pages/pelanggan/RiwayatTransaksi"));
+const RiwayatLaundry = lazy(() => import("./pages/pelanggan/RiwayatLaundry"));
 const KonfirmasiLaundry = lazy(() => import("./pages/pelanggan/KonfirmasiLaundry"));
-const BuktiPengantaran = lazy(() => import("./pages/pelanggan/BuktiPengantaran"));
-const PelangganJadwal = lazy(() => import("./pages/pelanggan/Jadwal"));
 const ProfilPelanggan = lazy(() => import("./pages/pelanggan/Profil"));
 
 const DashboardKurir = lazy(() => import("./pages/kurir/DashboardKurir"));
-const Jemput = lazy(() => import("./pages/kurir/Jemput"));
-const Antar = lazy(() => import("./pages/kurir/Antar"));
+const AntarJemput = lazy(() => import("./pages/kurir/AntarJemput"));
 const UploadBukti = lazy(() => import("./pages/kurir/UploadBukti"));
 const ProfilKurir = lazy(() => import("./pages/kurir/ProfilKurir"));
 
@@ -102,12 +98,9 @@ export default function App() {
         >
           <Route index element={<DashboardPelanggan />} />
           <Route path="pemesanan" element={<Pemesanan />} />
-          <Route path="jadwal" element={<PelangganJadwal />} />
           <Route path="biaya" element={<DetailBiaya />} />
-          <Route path="status" element={<StatusLaundry />} />
-          <Route path="riwayat" element={<RiwayatTransaksi />} />
+          <Route path="riwayat" element={<RiwayatLaundry />} />
           <Route path="konfirmasi" element={<KonfirmasiLaundry />} />
-          <Route path="bukti" element={<BuktiPengantaran />} />
           <Route path="profil" element={<ProfilPelanggan />} />
         </Route>
 
@@ -120,8 +113,7 @@ export default function App() {
           }
         >
           <Route index element={<DashboardKurir />} />
-          <Route path="jemput" element={<Jemput />} />
-          <Route path="antar" element={<Antar />} />
+          <Route path="antar-jemput" element={<AntarJemput />} />
           <Route path="bukti" element={<UploadBukti />} />
           <Route path="profil" element={<ProfilKurir />} />
         </Route>

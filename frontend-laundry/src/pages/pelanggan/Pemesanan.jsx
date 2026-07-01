@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { useToast } from "../../context/ToastContext";
-import { LAYANAN_OPTIONS } from "../../lib/constants";
+import { LAYANAN_OPTIONS, PENGANTARAN_OPTIONS } from "../../lib/constants";
 import laundryServices from "../../data/LaundryServices.json";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -15,7 +15,7 @@ import Badge from "../../components/ui/Badge";
 
 export default function Pemesanan() {
   const { user } = useAuth();
-  const { createOrder, getCustomerById } = useData();
+  const { createOrder, getCustomerById, getAvailableSlots } = useData();
   const { showToast } = useToast();
   const customer = getCustomerById(user?.customerId);
 
@@ -25,8 +25,7 @@ export default function Pemesanan() {
     alamat: customer?.address || "",
     layanan: "",
     pengantaran: "jemput",
-    tanggal: "",
-    jam: "",
+    slotId: "",
     catatan: "",
   });
 
@@ -35,6 +34,19 @@ export default function Pemesanan() {
   const [loading, setLoading] = useState(false);
 
   const layananDetails = LAYANAN_OPTIONS.find((item) => item.value === formData.layanan);
+  
+  // Get available slots based on pengantaran type
+  let availableSlots = [];
+  if (formData.pengantaran === "jemput") {
+    availableSlots = getAvailableSlots("jemput");
+  } else if (formData.pengantaran === "antar") {
+    availableSlots = getAvailableSlots("antar");
+  } else if (formData.pengantaran === "antar-jemput") {
+    // For antar-jemput, show both pickup and delivery slots
+    const jemputSlots = getAvailableSlots("jemput");
+    const antarSlots = getAvailableSlots("antar");
+    availableSlots = [...jemputSlots, ...antarSlots];
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,8 +61,7 @@ export default function Pemesanan() {
       alamat: customer?.address || "",
       layanan: "",
       pengantaran: "jemput",
-      tanggal: "",
-      jam: "",
+      slotId: "",
       catatan: "",
     });
     setError("");
@@ -72,7 +83,7 @@ export default function Pemesanan() {
         alamat: formData.alamat.trim(),
         layanan: formData.layanan,
         pengantaran: formData.pengantaran,
-        catatan: [formData.catatan.trim(), formData.tanggal && formData.jam ? `Preferensi jadwal: ${formData.tanggal} ${formData.jam}` : ""].filter(Boolean).join(" | "),
+        catatan: formData.catatan.trim(),
       });
       setLastOrderId(order.id);
       showToast(`Pesanan ${order.id} berhasil dibuat!`, "success");
@@ -89,7 +100,7 @@ export default function Pemesanan() {
       {lastOrderId && (
         <Alert variant="success">
           Pesanan <strong>{lastOrderId}</strong> tersimpan.{" "}
-          <Link to="/pelanggan/jadwal" className="underline font-semibold">Pilih slot jadwal →</Link>
+          <Link to="/pelanggan/riwayat" className="underline font-semibold">Lihat riwayat laundry →</Link>
         </Alert>
       )}
 
@@ -112,17 +123,25 @@ export default function Pemesanan() {
                   options={[{ value: "", label: "Pilih layanan" }, ...LAYANAN_OPTIONS.map((l) => ({ value: l.value, label: `${l.label} — Rp ${l.price.toLocaleString("id-ID")}/Kg` }))]}
                 />
                 <Select
-                  label="Metode *"
+                  label="Jenis Antar-Jemput *"
                   name="pengantaran"
                   value={formData.pengantaran}
                   onChange={handleChange}
+                  options={PENGANTARAN_OPTIONS}
+                />
+                <Select
+                  label="Pilih Jadwal Antar-Jemput"
+                  name="slotId"
+                  value={formData.slotId}
+                  onChange={handleChange}
                   options={[
-                    { value: "jemput", label: "Jemput ke Rumah" },
-                    { value: "antar", label: "Antar ke Laundry" },
+                    { value: "", label: "Pilih jadwal (opsional)" },
+                    ...availableSlots.map((slot) => ({
+                      value: slot.id,
+                      label: `${slot.tanggal} - ${slot.jam} (${slot.kapasitas - slot.terisi} slot tersedia)`,
+                    })),
                   ]}
                 />
-                <Input label="Preferensi Tanggal" name="tanggal" type="date" value={formData.tanggal} onChange={handleChange} hint="Slot final dipilih di halaman Jadwal" />
-                <Input label="Preferensi Waktu" name="jam" type="time" value={formData.jam} onChange={handleChange} />
               </div>
               <Textarea label="Alamat Lengkap *" name="alamat" rows={3} value={formData.alamat} onChange={handleChange} />
               <Textarea label="Catatan (Opsional)" name="catatan" rows={2} value={formData.catatan} onChange={handleChange} />

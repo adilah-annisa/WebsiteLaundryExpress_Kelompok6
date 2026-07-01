@@ -12,11 +12,10 @@ import { useData } from "../../context/DataContext";
 import { ADMIN_ORDER_STATUSES, formatRupiah } from "../../lib/constants";
 
 export default function Pesanan() {
-  const { orders, updateOrder, setOrderWeight, getOrderById } = useData();
+  const { orders, setOrderWeight, getOrderById } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [editStatus, setEditStatus] = useState("");
   const [beratInput, setBeratInput] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -32,7 +31,6 @@ export default function Pesanan() {
 
   const openDetail = (order) => {
     setSelectedOrder(order);
-    setEditStatus(order.status);
     setBeratInput(order.berat != null ? String(order.berat) : "");
     setMessage("");
     setError("");
@@ -40,8 +38,6 @@ export default function Pesanan() {
 
   const handleSave = () => {
     if (!selectedOrder) return;
-
-    updateOrder(selectedOrder.id, { status: editStatus });
 
     if (beratInput.trim()) {
       const result = setOrderWeight(selectedOrder.id, beratInput);
@@ -137,22 +133,23 @@ export default function Pesanan() {
         {selectedOrder && (
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2 text-sm">
+              <p><span className="text-slate-500">Nama Pelanggan:</span> <strong>{selectedOrder.nama}</strong></p>
+              <p><span className="text-slate-500">Telepon:</span> {selectedOrder.nohp}</p>
               <p><span className="text-slate-500">Alamat:</span> {selectedOrder.alamat}</p>
               <p><span className="text-slate-500">Layanan:</span> {selectedOrder.layananLabel}</p>
               <p><span className="text-slate-500">Tarif:</span> Rp {selectedOrder.tarifPerKg.toLocaleString("id-ID")}/Kg</p>
               <p><span className="text-slate-500">Jadwal:</span> {selectedOrder.tanggal ? `${selectedOrder.tanggal} ${selectedOrder.jam}` : "Belum dipilih"}</p>
+              <p><span className="text-slate-500">Jenis Antar-Jemput:</span> {
+                selectedOrder.pengantaran === "jemput" ? "Jemput ke Rumah" :
+                selectedOrder.pengantaran === "antar" ? "Antar ke Laundry" :
+                "Antar-Jemput"
+              }</p>
+              <p><span className="text-slate-500">Status:</span> <StatusBadge status={selectedOrder.status} /></p>
             </div>
-
-            <Select
-              label="Status Pesanan"
-              value={editStatus}
-              onChange={(e) => setEditStatus(e.target.value)}
-              options={ADMIN_ORDER_STATUSES.map((s) => ({ value: s, label: s }))}
-            />
 
             <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
               <Input
-                label="Input Berat Laundry (Kg)"
+                label="Input Berat Laundry (Kg) *"
                 type="number"
                 min="0"
                 step="0.1"
@@ -161,12 +158,19 @@ export default function Pesanan() {
                 placeholder="Contoh: 3.5"
               />
               {beratInput && selectedOrder.tarifPerKg && (
-                <p className="mt-2 text-sm text-blue-800">
-                  Estimasi: {beratInput} Kg × Rp {selectedOrder.tarifPerKg.toLocaleString("id-ID")} ={" "}
+                <p className="mt-2 text-sm text-blue-800 font-semibold">
+                  Estimasi Total: {beratInput} Kg × Rp {selectedOrder.tarifPerKg.toLocaleString("id-ID")} ={" "}
                   {formatRupiah(Number(beratInput) * selectedOrder.tarifPerKg)}
                 </p>
               )}
             </div>
+
+            {selectedOrder.catatan && (
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <p className="text-xs uppercase text-gray-500 font-semibold">Catatan Pesanan</p>
+                <p className="text-sm text-gray-700 mt-2">{selectedOrder.catatan}</p>
+              </div>
+            )}
           </div>
         )}
       </Modal>

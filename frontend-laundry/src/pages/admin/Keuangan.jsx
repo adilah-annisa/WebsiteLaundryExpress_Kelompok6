@@ -4,15 +4,13 @@ import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
 import { useData } from "../../context/DataContext";
 import { formatRupiah } from "../../lib/constants";
 
-const statusOptions = ["Lunas", "Belum Lunas"];
-const initialForm = { seri: "", name: "", date: "", amount: "", status: "Lunas" };
+const initialForm = { name: "", date: "", amount: "", keterangan: "" };
 
 export default function Keuangan() {
-  const { transactions, totalPendapatan, addTransaction, orders } = useData();
+  const { transactions, totalPendapatan, addTransaction } = useData();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [message, setMessage] = useState("");
   const [toast, setToast] = useState("");
 
@@ -20,15 +18,14 @@ export default function Keuangan() {
     const q = search.toLowerCase();
     return transactions.filter((item) => {
       const matchSearch = [item.seri, item.name].some((v) => v.toLowerCase().includes(q));
-      const matchStatus = statusFilter === "all" || item.status === statusFilter;
-      return matchSearch && matchStatus;
+      return matchSearch;
     });
-  }, [transactions, search, statusFilter]);
+  }, [transactions, search]);
 
   const summaryCards = [
     { label: "Total Pendapatan", value: formatRupiah(totalPendapatan), bg: "bg-green-50", text: "text-green-700" },
-    { label: "Pesanan Lunas", value: transactions.filter((t) => t.status === "Lunas").length, bg: "bg-blue-50", text: "text-blue-700" },
-    { label: "Pesanan Pending", value: transactions.filter((t) => t.status === "Belum Lunas").length, bg: "bg-orange-50", text: "text-orange-700" },
+    { label: "Jumlah Transaksi", value: transactions.length, bg: "bg-blue-50", text: "text-blue-700" },
+    { label: "Rata-rata Transaksi", value: transactions.length > 0 ? formatRupiah(totalPendapatan / transactions.length) : "-", bg: "bg-orange-50", text: "text-orange-700" },
   ];
 
   const handleInputChange = (field, value) => {
@@ -37,29 +34,37 @@ export default function Keuangan() {
   };
 
   const handleSave = () => {
-    const result = addTransaction(form);
+    if (!form.name.trim()) {
+      setMessage("Nama pelanggan wajib diisi.");
+      return;
+    }
+    if (!form.date.trim()) {
+      setMessage("Tanggal pembayaran wajib diisi.");
+      return;
+    }
+    if (!form.amount.trim()) {
+      setMessage("Nominal pembayaran wajib diisi.");
+      return;
+    }
+
+    const result = addTransaction({
+      seri: `CASH-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`,
+      name: form.name.trim(),
+      date: form.date,
+      amount: form.amount.trim().startsWith("Rp") ? form.amount.trim() : `Rp ${Number(form.amount).toLocaleString("id-ID")}`,
+      status: "Lunas",
+    });
+
     if (!result.ok) {
       setMessage(result.message);
       return;
     }
+
     setForm(initialForm);
     setShowForm(false);
     setMessage("");
-    setToast("Transaksi berhasil ditambahkan. Total pendapatan diperbarui.");
+    setToast("Pendapatan harian berhasil ditambahkan. Total pendapatan diperbarui.");
     setTimeout(() => setToast(""), 3000);
-  };
-
-  const fillFromOrder = (orderId) => {
-    const order = orders.find((o) => o.id === orderId);
-    if (!order) return;
-    setForm({
-      seri: order.id,
-      name: order.nama,
-      date: new Date().toISOString().split("T")[0],
-      amount: order.total != null ? formatRupiah(order.total) : "",
-      status: "Lunas",
-    });
-    setShowForm(true);
   };
 
   return (
@@ -70,7 +75,7 @@ export default function Keuangan() {
         </div>
       )}
 
-      <PageHeader title="Keuangan & Transaksi" subtitle="Catat transaksi dan pantau pendapatan" showSearch={false} />
+      <PageHeader title="Keuangan & Pendapatan" subtitle="Catat pendapatan harian dan pantau total" showSearch={false} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {summaryCards.map((card) => (
@@ -88,22 +93,16 @@ export default function Keuangan() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari seri atau nama..."
+              placeholder="Cari nama pelanggan atau seri..."
               className="px-4 py-2.5 border rounded-xl w-56"
             />
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-2.5 border rounded-xl bg-white">
-              <option value="all">Semua Status</option>
-              {statusOptions.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
           </div>
           <button
             type="button"
             onClick={() => setShowForm((p) => !p)}
             className="rounded-xl bg-[#1565C0] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f4d8a]"
           >
-            {showForm ? "Tutup Form" : "+ Tambah Transaksi"}
+            {showForm ? "Tutup Form" : "+ Tambah Pendapatan Harian"}
           </button>
         </div>
 
@@ -113,44 +112,33 @@ export default function Keuangan() {
 
         {showForm && (
           <div className="rounded-2xl border bg-gray-50 p-6">
-            <h2 className="text-lg font-semibold mb-4">Form Tambah Transaksi</h2>
+            <h2 className="text-lg font-semibold mb-4">Form Tambah Pendapatan Harian (Pembayaran Cash)</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {[
-                { label: "Seri Pesanan", field: "seri", type: "text" },
-                { label: "Nama Pelanggan", field: "name", type: "text" },
-                { label: "Tanggal", field: "date", type: "date" },
-                { label: "Jumlah", field: "amount", type: "text" },
+                { label: "Nama Pelanggan", field: "name", type: "text", placeholder: "Nama pelanggan" },
+                { label: "Tanggal Pembayaran", field: "date", type: "date" },
+                { label: "Nominal Pembayaran", field: "amount", type: "text", placeholder: "Contoh: 50000 atau Rp 50.000" },
+                { label: "Keterangan (Opsional)", field: "keterangan", type: "text", placeholder: "Catatan pembayaran" },
               ].map((item) => (
                 <div key={item.field}>
                   <label className="block text-sm font-semibold text-gray-600 mb-2">{item.label}</label>
                   <input
                     type={item.type}
-                    value={form[item.field]}
+                    value={form[item.field] || ""}
                     onChange={(e) => handleInputChange(item.field, e.target.value)}
+                    placeholder={item.placeholder}
                     className="w-full px-4 py-2.5 border rounded-xl"
                   />
                 </div>
               ))}
-              <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">Status Bayar</label>
-                <select value={form.status} onChange={(e) => handleInputChange("status", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl bg-white">
-                  {statusOptions.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <p className="mt-3 text-xs text-gray-500">Isi cepat dari pesanan lunas:</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {orders.filter((o) => o.total != null).slice(0, 4).map((o) => (
-                <button key={o.id} type="button" onClick={() => fillFromOrder(o.id)} className="text-xs px-3 py-1 rounded-full border hover:bg-white">
-                  {o.id}
-                </button>
-              ))}
             </div>
             <div className="mt-6 flex gap-3 justify-end">
-              <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 rounded-xl border font-semibold">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-3 rounded-xl bg-[#1565C0] text-white font-semibold">Simpan Transaksi</button>
+              <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 rounded-xl border font-semibold">
+                Batal
+              </button>
+              <button type="button" onClick={handleSave} className="px-5 py-3 rounded-xl bg-[#1565C0] text-white font-semibold">
+                Simpan Pendapatan
+              </button>
             </div>
           </div>
         )}
@@ -159,7 +147,7 @@ export default function Keuangan() {
           <table className="min-w-full text-left">
             <thead>
               <tr className="bg-gray-50">
-                {["Seri", "Nama", "Tanggal", "Jumlah", "Status"].map((h) => (
+                {["Seri", "Nama Pelanggan", "Tanggal", "Nominal", "Status"].map((h) => (
                   <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
                 ))}
               </tr>
@@ -171,13 +159,15 @@ export default function Keuangan() {
                     <td className="px-4 py-4 text-sm">{item.seri}</td>
                     <td className="px-4 py-4 text-sm">{item.name}</td>
                     <td className="px-4 py-4 text-sm">{item.date}</td>
-                    <td className="px-4 py-4 text-sm">{item.amount}</td>
+                    <td className="px-4 py-4 text-sm font-semibold text-green-700">{item.amount}</td>
                     <td className="px-4 py-4"><StatusBadge status={item.status} /></td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-14 text-center text-gray-500">Tidak ada transaksi.</td>
+                  <td colSpan={5} className="px-6 py-14 text-center text-gray-500">
+                    Tidak ada pendapatan.
+                  </td>
                 </tr>
               )}
             </tbody>

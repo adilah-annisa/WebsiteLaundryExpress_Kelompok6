@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdSpaceDashboard, MdOutlineSchedule, MdOutlineLocalLaundryService, MdLogout } from "react-icons/md";
+import { MdSpaceDashboard, MdLogout } from "react-icons/md";
 import { GoListOrdered } from "react-icons/go";
 import { FaHistory } from "react-icons/fa";
-import { IoReceiptOutline, IoClose } from "react-icons/io5";
+import { MdPayments, MdPersonOutline } from "react-icons/md";
+import { IoClose } from "react-icons/io5";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -15,10 +16,9 @@ export default function SidebarPelanggan({ open = false, onClose }) {
     const menuItems = [
         { icon: MdSpaceDashboard, label: "Dashboard", path: "/pelanggan" },
         { icon: GoListOrdered, label: "Pesan Laundry", path: "/pelanggan/pemesanan" },
-        { icon: MdOutlineSchedule, label: "Jadwal Jemput", path: "/pelanggan/jadwal" },
-        { icon: MdOutlineLocalLaundryService, label: "Status Laundry", path: "/pelanggan/status" },
-        { icon: FaHistory, label: "Riwayat", path: "/pelanggan/riwayat" },
-        { icon: IoReceiptOutline, label: "Bukti Antar", path: "/pelanggan/bukti" },
+        { icon: FaHistory, label: "Riwayat Laundry", path: "/pelanggan/riwayat" },
+        { icon: MdPayments, label: "Detail Biaya", path: "/pelanggan/biaya" },
+        { icon: MdPersonOutline, label: "Profil", path: "/pelanggan/profil" },
     ];
 
     useEffect(() => {
