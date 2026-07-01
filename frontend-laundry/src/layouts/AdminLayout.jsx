@@ -10,7 +10,6 @@ const PAGE_TITLES = {
   "/dashboard/jadwal": { title: "Kelola Jadwal", subtitle: "Slot antar-jemput" },
   "/dashboard/keuangan": { title: "Kelola Transaksi", subtitle: "Pencatatan keuangan" },
   "/dashboard/laporan": { title: "Laporan", subtitle: "Analitik pendapatan" },
-  "/dashboard/pelanggan-admin": { title: "Data Pelanggan", subtitle: "Informasi pelanggan" },
   "/dashboard/pengaturan": { title: "Pengaturan", subtitle: "Konfigurasi sistem" },
 };
 
