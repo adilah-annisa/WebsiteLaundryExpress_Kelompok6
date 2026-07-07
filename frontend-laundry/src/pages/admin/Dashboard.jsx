@@ -144,7 +144,6 @@ export default function Laporan() {
                       title={`${item.bulan}: ${item.nilai}%`}
                     />
                   </div>
-
                   <span className="text-xs font-inter-semibold text-slate-600">
                     {item.bulan}
                   </span>
