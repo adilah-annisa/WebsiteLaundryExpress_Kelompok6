@@ -12,26 +12,30 @@ import {
 
 const DataContext = createContext(null);
 
-function loadData() {
-  try {
-    const raw = localStorage.getItem(DATA_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {
-    localStorage.removeItem(DATA_STORAGE_KEY);
-  }
-  return createInitialData();
-}
-
-function persist(data) {
-  localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(data));
-}
-
 export function DataProvider({ children }) {
-  const [data, setData] = useState(loadData);
+  const [data, setData] = useState(() => createInitialData());
+  const [loading, setLoading] = useState(true);
+
+  const refreshOrders = useCallback(async () => {
+    // Data saat ini dikelola sepenuhnya secara lokal.
+  }, []);
 
   useEffect(() => {
-    persist(data);
-  }, [data]);
+    let cancelled = false;
+
+    async function bootstrap() {
+      try {
+        await Promise.resolve();
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const update = useCallback((updater) => {
     setData((prev) => {
@@ -39,6 +43,7 @@ export function DataProvider({ children }) {
       return next;
     });
   }, []);
+
 
   const getOrdersForCustomer = useCallback(
     (customerId) => data.orders.filter((o) => o.customerId === customerId),
