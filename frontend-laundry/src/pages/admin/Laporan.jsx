@@ -4,6 +4,7 @@ import {
   IoShirtOutline,
   IoTimeOutline,
   IoCheckmarkCircleOutline,
+  IoTrendingUpOutline,
 } from "react-icons/io5";
 import StatCard from "../../components/StatCard";
 
@@ -23,11 +24,36 @@ export default function Laporan() {
   const summary = useMemo(() => {
     const completedOrders = 1180;
     const monthlyGrowth = 12;
+
     return [
-      { label: "Pendapatan Bulanan", value: "Rp 1.248.000", color: "#10b981", bgIcon: "bg-green-50", icon: IoCubeOutline },
-      { label: "Pendapatan Mingguan", value: "Rp 300.000", color: "#3b82f6", bgIcon: "bg-blue-50", icon: IoShirtOutline },
-      { label: "Pertumbuhan", value: `${monthlyGrowth}%`, color: "#f59e0b", bgIcon: "bg-yellow-50", icon: IoTimeOutline },
-      { label: "Pesanan Selesai", value: completedOrders, color: "#22c55e", bgIcon: "bg-emerald-50", icon: IoCheckmarkCircleOutline },
+      {
+        label: "Pendapatan Bulanan",
+        value: "Rp 1.248.000",
+        color: "#10b981",
+        bgIcon: "bg-green-50",
+        icon: IoCubeOutline,
+      },
+      {
+        label: "Pendapatan Mingguan",
+        value: "Rp 300.000",
+        color: "#3b82f6",
+        bgIcon: "bg-blue-50",
+        icon: IoShirtOutline,
+      },
+      {
+        label: "Pertumbuhan",
+        value: `${monthlyGrowth}%`,
+        color: "#f59e0b",
+        bgIcon: "bg-yellow-50",
+        icon: IoTimeOutline,
+      },
+      {
+        label: "Pesanan Selesai",
+        value: completedOrders,
+        color: "#22c55e",
+        bgIcon: "bg-emerald-50",
+        icon: IoCheckmarkCircleOutline,
+      },
     ];
   }, []);
 
@@ -37,53 +63,101 @@ export default function Laporan() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-screen-2xl mx-auto">
       {toast && (
         <div className="fixed top-4 right-4 z-50 rounded-xl bg-slate-900 text-white px-5 py-3 text-sm font-inter-semibold shadow-lg">
           {toast}
         </div>
       )}
 
+      {/* Header */}
+      <div className="rounded-2xl bg-linear-to-r from-[#1565C0] to-[#3b6fd8] p-6 text-white shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-blue-100 text-sm font-poppins">
+              Laundry Express — Panel Pemilik
+            </p>
+
+            <h2 className="font-inter-semibold text-2xl mt-1">
+              Laporan
+            </h2>
+
+            <p className="text-blue-100 text-sm mt-2 font-poppins">
+              Pantau ringkasan pendapatan, statistik pesanan, dan perkembangan
+              bisnis Laundry Express.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+            <IoTrendingUpOutline className="text-2xl" />
+          </div>
+        </div>
+      </div>
+
+      {/* Statistik */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {summary.map((item, index) => (
-          <StatCard key={index} icon={item.icon} label={item.label} value={item.value} color={item.color} bgIcon={item.bgIcon} />
+          <StatCard
+            key={index}
+            icon={item.icon}
+            label={item.label}
+            value={item.value}
+            color={item.color}
+            bgIcon={item.bgIcon}
+          />
         ))}
       </div>
 
+      {/* Grafik */}
       <div className="rounded-3xl border border-slate-200 bg-white shadow-sm p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-inter-semibold text-slate-900">Ringkasan Laporan Pendapatan</h2>
-            <p className="mt-1 text-sm text-slate-500">Lihat tren pendapatan bulanan dan kinerja laundry Anda.</p>
+            <h2 className="text-xl font-inter-semibold text-slate-900">
+              Ringkasan Laporan Pendapatan
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Lihat tren pendapatan bulanan dan kinerja laundry Anda.
+            </p>
           </div>
+
           <button
-            type="button"
             onClick={handleExport}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-inter-semibold text-white hover:bg-slate-800 transition hover:scale-[1.02]"
+            className="rounded-xl bg-[#1565C0] px-4 py-2 text-white hover:bg-[#0f4fa8] transition"
           >
-            Ekspor PDF
+            Export PDF
           </button>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Grafik Pendapatan (6 Bulan)</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+              Grafik Pendapatan (6 Bulan)
+            </p>
+
             <div className="mt-8 h-72 flex items-end justify-between gap-3 px-2">
               {monthlyData.map((item) => (
-                <div key={item.bulan} className="flex-1 flex flex-col items-center gap-2 group">
+                <div
+                  key={item.bulan}
+                  className="flex-1 flex flex-col items-center gap-2 group"
+                >
                   <div className="relative w-full flex justify-center">
                     <div
                       className="w-full max-w-12 rounded-t-xl bg-linear-to-t from-[#1565C0] to-[#3b6fd8] transition-all duration-500 group-hover:opacity-90 group-hover:scale-y-105 origin-bottom"
-                      style={{ height: `${(item.nilai / maxNilai) * 200}px` }}
+                      style={{
+                        height: `${(item.nilai / maxNilai) * 200}px`,
+                      }}
                       title={`${item.bulan}: ${item.nilai}%`}
                     />
                   </div>
-                  <span className="text-xs font-inter-semibold text-slate-600">{item.bulan}</span>
+
+                  <span className="text-xs font-inter-semibold text-slate-600">
+                    {item.bulan}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>

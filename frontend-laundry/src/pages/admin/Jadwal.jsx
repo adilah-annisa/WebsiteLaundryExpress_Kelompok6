@@ -134,40 +134,71 @@ export default function Jadwal() {
           </div>
         )}
 
-                {filteredSchedule.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">Belum ada jadwal.</p>
+        {filteredSchedule.length === 0 ? (
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 px-6 py-10 text-center">
+            <p className="text-sm font-semibold text-gray-700">Belum ada jadwal</p>
+            <p className="text-xs text-gray-500 mt-2">Tambahkan slot jadwal baru untuk mulai mengatur penjemputan/pengantaran.</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="min-w-full text-left">
               <thead>
                 <tr className="bg-gray-50">
-                          {["Jam", "Jenis", "Status", "Aksi"].map((h) => (
-                            <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
-                          ))}
+                  {['Jam', 'Jenis', 'Status', 'Aksi'].map((h) => (
+                    <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y">
-                {visibleSlots.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 text-sm">{item.jam}</td>
-                    <td className="px-4 py-4 text-sm capitalize">{item.jenis}</td>
-                    <td className="px-4 py-4">
-                      <button
-                        type="button"
-                        disabled={item.done}
-                        onClick={() => addSlot({ id: item.id, jam: item.jam, jenis: item.jenis, terisi: item.terisi, done: true })}
-                        className={`px-3 py-1 rounded-xl text-sm font-semibold ${item.done ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-800"}`}
-                      >
-                        {item.done ? "Selesai" : "Selesai"}
-                      </button>
-                    </td>
-                    <td className="px-4 py-4">
-                      <button type="button" onClick={() => !item.done && openEdit(item)} disabled={item.done} className={`text-sm font-semibold ${item.done ? "text-gray-400" : "text-[#1565C0] hover:underline"}`}>
-                        Ubah
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-gray-100">
+                {visibleSlots.map((item) => {
+                  const statusText = item.done ? 'Selesai' : 'Belum';
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-4 text-sm text-gray-800 whitespace-nowrap">{item.jam}</td>
+                      <td className="px-4 py-4 text-sm text-gray-800 capitalize">{item.jenis}</td>
+                      <td className="px-4 py-4">
+                        <StatusBadge status={statusText} />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            disabled={item.done}
+                            onClick={() =>
+                              addSlot({
+                                id: item.id,
+                                jam: item.jam,
+                                jenis: item.jenis,
+                                terisi: item.terisi,
+                                done: true,
+                              })
+                            }
+                            className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap ${
+                              item.done
+                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                : 'bg-green-100 text-green-800 hover:bg-green-200'
+                            }`}
+                          >
+                            Selesai
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => !item.done && openEdit(item)}
+                            disabled={item.done}
+                            className={`text-sm font-semibold transition-colors whitespace-nowrap ${
+                              item.done ? 'text-gray-400 cursor-not-allowed' : 'text-[#1565C0] hover:underline'
+                            }`}
+                          >
+                            Ubah
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
