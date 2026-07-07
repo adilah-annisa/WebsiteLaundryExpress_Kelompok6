@@ -4,7 +4,7 @@ import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
 import { useData } from "../../context/DataContext";
 import { formatRupiah } from "../../lib/constants";
 
-const initialForm = { name: "", date: "", amount: "", keterangan: "" };
+const initialForm = { amount: "", keterangan: "" };
 
 export default function Keuangan() {
   const { transactions, totalPendapatan, addTransaction } = useData();
@@ -34,23 +34,15 @@ export default function Keuangan() {
   };
 
   const handleSave = () => {
-    if (!form.name.trim()) {
-      setMessage("Nama pelanggan wajib diisi.");
-      return;
-    }
-    if (!form.date.trim()) {
-      setMessage("Tanggal pembayaran wajib diisi.");
-      return;
-    }
     if (!form.amount.trim()) {
-      setMessage("Nominal pembayaran wajib diisi.");
+      setMessage("Masukkan total pendapatan harian.");
       return;
     }
 
     const result = addTransaction({
       seri: `CASH-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`,
-      name: form.name.trim(),
-      date: form.date,
+      name: "-",
+      date: new Date().toISOString().slice(0, 10),
       amount: form.amount.trim().startsWith("Rp") ? form.amount.trim() : `Rp ${Number(form.amount).toLocaleString("id-ID")}`,
       status: "Lunas",
     });
@@ -114,23 +106,26 @@ export default function Keuangan() {
           <div className="rounded-2xl border bg-gray-50 p-6">
             <h2 className="text-lg font-semibold mb-4">Form Tambah Pendapatan Harian (Pembayaran Cash)</h2>
             <div className="grid gap-4 md:grid-cols-2">
-              {[
-                { label: "Nama Pelanggan", field: "name", type: "text", placeholder: "Nama pelanggan" },
-                { label: "Tanggal Pembayaran", field: "date", type: "date" },
-                { label: "Nominal Pembayaran", field: "amount", type: "text", placeholder: "Contoh: 50000 atau Rp 50.000" },
-                { label: "Keterangan (Opsional)", field: "keterangan", type: "text", placeholder: "Catatan pembayaran" },
-              ].map((item) => (
-                <div key={item.field}>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">{item.label}</label>
-                  <input
-                    type={item.type}
-                    value={form[item.field] || ""}
-                    onChange={(e) => handleInputChange(item.field, e.target.value)}
-                    placeholder={item.placeholder}
-                    className="w-full px-4 py-2.5 border rounded-xl"
-                  />
-                </div>
-              ))}
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Total Pendapatan Harian</label>
+                <input
+                  type="text"
+                  value={form.amount || ""}
+                  onChange={(e) => handleInputChange("amount", e.target.value)}
+                  placeholder="Contoh: 50000 atau Rp 50.000"
+                  className="w-full px-4 py-2.5 border rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Keterangan (Opsional)</label>
+                <input
+                  type="text"
+                  value={form.keterangan || ""}
+                  onChange={(e) => handleInputChange("keterangan", e.target.value)}
+                  placeholder="Catatan pembayaran"
+                  className="w-full px-4 py-2.5 border rounded-xl"
+                />
+              </div>
             </div>
             <div className="mt-6 flex gap-3 justify-end">
               <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 rounded-xl border font-semibold">

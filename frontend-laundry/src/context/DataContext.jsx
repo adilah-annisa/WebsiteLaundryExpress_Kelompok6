@@ -8,6 +8,7 @@ import {
   formatBerat,
   formatRupiah,
   getLayananByValue,
+  LAYANAN_OPTIONS,
 } from "../lib/constants";
 
 const DataContext = createContext(null);
@@ -34,6 +35,8 @@ function buildOrderRecord(payload) {
     berat: payload.berat ?? payload.berat_kg ?? null,
     total: payload.total ?? payload.total_biaya ?? null,
     pengantaran: payload.pengantaran || "jemput",
+    transportKotor: payload.transportKotor || null,
+    transportBersih: payload.transportBersih || null,
     slotId: payload.slotId || payload.id_jadwal || null,
     tanggal: payload.tanggal || payload.tanggal_pesanan || "",
     jam: payload.jam || "",
@@ -61,14 +64,17 @@ function buildSlotRecord(payload) {
   return {
     id: payload.id || payload.id_jadwal || "",
     id_jadwal: payload.id_jadwal || payload.id || "",
-    tanggal: payload.tanggal || "",
+    // Jadwal berlaku setiap hari (tidak menggunakan tanggal), hanya menyimpan jam/jenis
+    tanggal: "",
     jam: payload.jam || payload.jam_jemput || "",
     jenis: payload.jenis || "jemput",
-    kapasitas: Number(payload.kapasitas) || 3,
+    // Single-courier model: kapasitas implicit = 1, terisi 0/1
+    kapasitas: 1,
     terisi: Number(payload.terisi) || 0,
     jam_jemput: payload.jam_jemput || payload.jam || "",
     jam_antar: payload.jam_antar || "",
     keterangan: payload.keterangan || "",
+    done: payload.done || false,
   };
 }
 
@@ -139,12 +145,20 @@ export function DataProvider({ children }) {
   );
 
   const createOrder = useCallback((payload) => {
-    const layanan = getLayananByValue(payload.layanan);
+    const layanan = getLayananByValue(payload.layanan || (LAYANAN_OPTIONS[0] && LAYANAN_OPTIONS[0].value));
     if (!layanan) throw new Error("Jenis layanan tidak valid.");
 
     let newOrder = null;
     update((prev) => {
       const counter = prev.orderCounter + 1;
+      // Determine who handles dirty (kotor) and clean (bersih) transport
+      // jemput: kurir picks up kotor, pelanggan picks up clean
+      // antar: pelanggan brings kotor, kurir delivers clean
+      // antar-jemput: kurir handles both directions
+      const peng = payload.pengantaran || "jemput";
+      const transportKotor = peng === "jemput" || peng === "antar-jemput" ? "kurir" : "pelanggan";
+      const transportBersih = peng === "antar" ? "kurir" : "pelanggan";
+
       newOrder = buildOrderRecord({
         id: `#P${String(counter).padStart(3, "0")}`,
         customerId: payload.customerId,
@@ -158,6 +172,8 @@ export function DataProvider({ children }) {
         total: null,
         status: "Diproses",
         pengantaran: payload.pengantaran || "jemput",
+        transportKotor,
+        transportBersih,
         slotId: null,
         tanggal: "",
         jam: "",
@@ -202,16 +218,17 @@ export function DataProvider({ children }) {
           error = "Pesanan tidak ditemukan.";
           return prev;
         }
-        if (slot.terisi >= slot.kapasitas) {
-          error = "Slot penuh. Silakan pilih jadwal lain.";
+        // Single courier: slot can only be taken by one customer at a time
+        if (slot.terisi >= 1) {
+          error = "Slot sudah diambil. Silakan pilih jadwal lain.";
           return prev;
         }
 
         const oldSlotId = order.slotId;
         let slots = prev.slots.map((s) => {
-          if (s.id === slotId) return { ...s, terisi: s.terisi + 1 };
+          if (s.id === slotId) return { ...s, terisi: 1 };
           if (oldSlotId && s.id === oldSlotId && oldSlotId !== slotId) {
-            return { ...s, terisi: Math.max(0, s.terisi - 1) };
+            return { ...s, terisi: 0 };
           }
           return s;
         });
@@ -222,7 +239,8 @@ export function DataProvider({ children }) {
                 ...o,
                 slotId,
                 id_jadwal: slot.id_jadwal || slot.id,
-                tanggal: slot.tanggal,
+                // Jadwal berlaku setiap hari - hanya simpan jam/slotId
+                tanggal: "",
                 jam: slot.jam,
                 tanggal_pesanan: slot.tanggal,
                 pengantaran: slot.jenis === "antar" ? "antar" : o.pengantaran,
@@ -239,9 +257,8 @@ export function DataProvider({ children }) {
 
   const getAvailableSlots = useCallback(
     (jenis) => {
-      return data.slots.filter(
-        (s) => s.jenis === jenis && s.terisi < s.kapasitas
-      );
+      // Available if terisi === 0 (single courier)
+      return data.slots.filter((s) => s.jenis === jenis && (!s.terisi || s.terisi === 0));
     },
     [data.slots]
   );
@@ -250,15 +267,12 @@ export function DataProvider({ children }) {
     (slotPayload) => {
       let error = null;
       update((prev) => {
+        // Conflict when same jam & jenis (jadwal berlaku setiap hari)
         const conflict = prev.slots.some(
-          (s) =>
-            s.tanggal === slotPayload.tanggal &&
-            s.jam === slotPayload.jam &&
-            s.jenis === slotPayload.jenis &&
-            s.id !== slotPayload.id
+          (s) => s.jam === slotPayload.jam && s.jenis === slotPayload.jenis && s.id !== slotPayload.id
         );
         if (conflict) {
-          error = "Jadwal bentrok dengan slot yang sudah ada. Pilih tanggal atau waktu lain.";
+          error = "Jadwal bentrok dengan slot yang sudah ada (jam/jenis sama).";
           return prev;
         }
 
@@ -266,10 +280,8 @@ export function DataProvider({ children }) {
         const newSlot = buildSlotRecord({
           id,
           id_jadwal: slotPayload.id_jadwal || slotPayload.id || id,
-          tanggal: slotPayload.tanggal,
           jam: slotPayload.jam,
           jenis: slotPayload.jenis,
-          kapasitas: Number(slotPayload.kapasitas) || 3,
           terisi: Number(slotPayload.terisi) || 0,
           jam_jemput: slotPayload.jam_jemput || slotPayload.jam || "",
           jam_antar: slotPayload.jam_antar || "",
@@ -312,13 +324,13 @@ export function DataProvider({ children }) {
       }
 
       const waktu = new Date().toISOString();
-      update((prev) => ({
-        ...prev,
-        orders: prev.orders.map((o) =>
+      update((prev) => {
+        const orders = prev.orders.map((o) =>
           o.id === orderId
             ? {
                 ...o,
-                status: "Selesai",
+                // When kurir uploads bukti, mark as Diantar (awaiting customer confirmation)
+                status: "Diantar",
                 bukti: {
                   foto,
                   waktu,
@@ -327,8 +339,19 @@ export function DataProvider({ children }) {
                 },
               }
             : o
-        ),
-      }));
+        );
+
+        // Free up the slot associated with this order (so it can be booked again)
+        const order = prev.orders.find((o) => o.id === orderId);
+        const slots = prev.slots.map((s) => {
+          if (order && order.slotId && s.id === order.slotId) {
+            return { ...s, terisi: 0 };
+          }
+          return s;
+        });
+
+        return { ...prev, orders, slots };
+      });
       return { ok: true, waktu };
     },
     [update]

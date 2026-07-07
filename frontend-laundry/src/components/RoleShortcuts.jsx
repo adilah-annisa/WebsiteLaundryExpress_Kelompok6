@@ -20,6 +20,9 @@ const PORTALS = {
 export default function RoleShortcuts({ role }) {
   const items = PORTALS[role] || [];
 
+  // Remove portal shortcuts for all roles per requirement
+  if (role === "admin" || role === "pelanggan" || role === "kurir") return null;
+
   if (!items.length) return null;
 
   return (

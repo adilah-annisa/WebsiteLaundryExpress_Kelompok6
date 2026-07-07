@@ -6,8 +6,8 @@ export const LAYANAN_OPTIONS = [
 ];
 
 export const PENGANTARAN_OPTIONS = [
-  { value: "jemput", label: "Jemput ke Rumah" },
-  { value: "antar", label: "Antar ke Laundry" },
+  { value: "jemput", label: "Jemput Saja" },
+  { value: "antar", label: "Antar Saja" },
   { value: "antar-jemput", label: "Antar-Jemput" },
 ];
 

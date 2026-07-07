@@ -16,17 +16,15 @@ export default function KonfirmasiLaundry() {
   const { showToast } = useToast();
 
   const orders = getOrdersForCustomer(user.customerId);
-  const confirmable = useMemo(
-    () => orders.filter((o) => ["Siap Diantar", "Diantar", "Selesai"].includes(o.status)),
-    [orders]
-  );
+  // Only orders that are Diantar and have bukti are confirmable
+  const confirmable = useMemo(() => orders.filter((o) => o.status === "Diantar" && o.bukti?.foto), [orders]);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleConfirm = () => {
     if (!selectedOrder) return;
-    updateOrder(selectedOrder.id, { status: "Selesai" });
+    updateOrder(selectedOrder.id, { status: "Diterima Pelanggan" });
     setModalOpen(false);
     showToast(`Pesanan ${selectedOrder.id} berhasil dikonfirmasi diterima.`, "success");
     setSelectedOrder(null);
@@ -59,12 +57,8 @@ export default function KonfirmasiLaundry() {
             )}
             <div className="flex items-center justify-between">
               <StatusBadge status={order.status} />
-              <Button
-                size="sm"
-                disabled={order.status === "Selesai"}
-                onClick={() => { setSelectedOrder(order); setModalOpen(true); }}
-              >
-                Konfirmasi
+              <Button size="sm" disabled={order.status !== "Diantar" || !order.bukti?.foto} onClick={() => { setSelectedOrder(order); setModalOpen(true); }}>
+                Selesai
               </Button>
             </div>
           </div>

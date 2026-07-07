@@ -1,19 +1,23 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import RoleShortcuts from "../../components/RoleShortcuts";
 import { Card, CardBody, CardHeader } from "../../components/ui/Card";
 import { useData } from "../../context/DataContext";
 import StatusBadge from "../../components/StatusBadge";
 import StatCard from "../../components/StatCard";
+import EmptyState from "../../components/ui/EmptyState";
 import {
   IoClipboardOutline,
   IoCarOutline,
   IoTimeOutline,
   IoCheckmarkDoneOutline,
+  IoChevronForwardOutline,
 } from "react-icons/io5";
 
 export default function DashboardKurir() {
   const { getKurirTasks } = useData();
   const { pickups, deliveries, all } = getKurirTasks();
+
+  const pendingTasks = all.filter((task) => task.status !== "Selesai");
 
   const stats = [
     { label: "Total Tugas", value: String(all.length), icon: IoClipboardOutline, color: "#3B82F6", bgIcon: "bg-blue-50" },
@@ -25,56 +29,103 @@ export default function DashboardKurir() {
   return (
     <div className="w-full max-w-screen-2xl mx-auto space-y-8">
       <RoleShortcuts role="kurir" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatCard key={index} icon={stat.icon} label={stat.label} value={stat.value} color={stat.color} bgIcon={stat.bgIcon} />
-        ))}
-      </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
-          <h2 className="font-semibold text-lg">Jadwal Tugas Kurir</h2>
-          <Link to="/kurir/jemput" className="text-sm text-[#3b6fd8] hover:underline">Lihat Semua →</Link>
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, index) => (
+            <StatCard key={index} icon={stat.icon} label={stat.label} value={stat.value} color={stat.color} bgIcon={stat.bgIcon} />
+          ))}
         </div>
 
-        {all.length === 0 ? (
-          <p className="px-6 py-12 text-center text-gray-500">Belum ada tugas antar-jemput.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] hidden md:table">
-              <thead>
-                <tr className="bg-gray-50 border-b">
-                  {["Kode", "Nama", "Alamat", "Tanggal", "Waktu", "Jenis", "Status"].map((h) => (
-                    <th key={h} className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-600">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {all.slice(0, 8).map((task) => (
-                  <tr key={task.kode + task.jenis} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-semibold">{task.kode}</td>
-                    <td className="px-6 py-4 text-sm">{task.nama}</td>
-                    <td className="px-6 py-4 text-sm max-w-xs truncate">{task.alamat}</td>
-                    <td className="px-6 py-4 text-sm">{task.tanggal}</td>
-                    <td className="px-6 py-4 text-sm">{task.waktu}</td>
-                    <td className="px-6 py-4 text-sm">{task.jenis}</td>
-                    <td className="px-6 py-4"><StatusBadge status={task.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="md:hidden space-y-3 p-4">
-              {all.slice(0, 5).map((task) => (
-                <div key={task.kode + task.jenis} className="rounded-lg border p-3">
-                  <p className="font-semibold text-sm">{task.kode} • {task.nama}</p>
-                  <p className="text-xs text-gray-500 mt-1">{task.alamat}</p>
-                  <p className="text-xs mt-2">{task.tanggal} {task.waktu} — {task.jenis}</p>
-                </div>
-              ))}
+        <Card>
+          <CardHeader title="Proses Kurir" subtitle="Langkah kerja untuk tugas harian" />
+          <CardBody className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-800">1. Ambil / antar laundry</p>
+              <p className="text-sm text-slate-500 mt-1">Tangani penjemputan atau pengantaran sesuai tugas yang terdaftar.</p>
             </div>
-          </div>
-        )}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-800">2. Upload bukti</p>
+              <p className="text-sm text-slate-500 mt-1">Unggah foto sebagai bukti bahwa tugas sudah dilakukan.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-800">3. Tunggu konfirmasi pelanggan</p>
+              <p className="text-sm text-slate-500 mt-1">Pelanggan akan menyelesaikan pesanan setelah melihat bukti pengantaran/penjemputan.</p>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
+        <Card>
+          <CardHeader title="Tugas Kurir" subtitle="Tugas terbaru dan status saat ini" />
+          <CardBody>
+            {all.length === 0 ? (
+              <EmptyState
+                icon={IoClipboardOutline}
+                title="Belum ada tugas saat ini"
+                description="Tidak ada order penjemputan atau pengantaran yang perlu ditangani sekarang."
+                action={<Link to="/kurir/antar" className="inline-flex items-center rounded-xl bg-[#1565C0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f4d8a]">Periksa Halaman Tugas</Link>}
+              />
+            ) : (
+              <div className="space-y-4">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                  <table className="w-full min-w-160 text-left">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        {['Kode', 'Jenis', 'Nama', 'Waktu', 'Status'].map((h) => (
+                          <th key={h} className="px-5 py-3 text-xs font-semibold uppercase text-slate-600">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y bg-white">
+                      {all.slice(0, 7).map((task) => (
+                        <tr key={task.kode + task.jenis} className="hover:bg-slate-50">
+                          <td className="px-5 py-4 text-sm font-semibold text-slate-900">{task.kode}</td>
+                          <td className="px-5 py-4 text-sm text-slate-600">{task.jenis}</td>
+                          <td className="px-5 py-4 text-sm text-slate-600 truncate">{task.nama}</td>
+                          <td className="px-5 py-4 text-sm text-slate-600">{task.tanggal} {task.waktu}</td>
+                          <td className="px-5 py-4"><StatusBadge status={task.status} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex justify-end">
+                  <Link to="/kurir/jemput" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1565C0] hover:text-[#0f4d8a]">
+                    Lihat Semua Tugas <IoChevronForwardOutline />
+                  </Link>
+                </div>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader title="Tugas Menunggu" subtitle="Order yang belum selesai" />
+          <CardBody>
+            {pendingTasks.length === 0 ? (
+              <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center text-sm text-green-800">
+                Semua tugas sudah selesai. Terus pertahankan performa yang baik.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pendingTasks.slice(0, 4).map((task) => (
+                  <div key={task.kode + task.jenis} className="rounded-2xl border border-slate-200 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{task.kode}</p>
+                        <p className="text-xs text-slate-500">{task.jenis} • {task.tanggal} {task.waktu}</p>
+                      </div>
+                      <StatusBadge status={task.status} />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-600 truncate">{task.alamat}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardBody>
+        </Card>
       </div>
     </div>
   );

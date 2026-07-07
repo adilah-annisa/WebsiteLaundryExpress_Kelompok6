@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { formatRupiah } from "../../lib/constants";
 import RoleShortcuts from "../../components/RoleShortcuts";
+import { useMemo } from "react";
 import { Card, CardBody, CardHeader } from "../../components/ui/Card";
 
 const iconMap = {
@@ -21,6 +22,24 @@ const iconMap = {
 
 export default function Dashboard() {
   const { orders, totalPendapatan } = useData();
+  const { transactions } = useData();
+
+  const weekly = useMemo(() => {
+    const today = new Date();
+    const days = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      return d.toISOString().slice(0, 10);
+    });
+
+    const sums = days.map((day) => {
+      const total = transactions
+        .filter((t) => t.date === day && (t.status === "Lunas" || String(t.status).toLowerCase() === "lunas"))
+        .reduce((acc, t) => acc + (t.amountNum || Number(String(t.amount || "").replace(/[^0-9]/g, "")) || 0), 0);
+      return { day, total };
+    });
+    return sums;
+  }, [transactions]);
 
   const stats = [
     { label: "Total Pesanan", value: String(orders.length), iconName: "IoShirtOutline", color: "#3b82f6", bgIcon: "bg-blue-50" },
@@ -64,6 +83,32 @@ export default function Dashboard() {
             </div>
           );
         })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+          <p className="text-sm text-gray-500">Pendapatan Mingguan</p>
+          <div className="mt-4 h-36 flex items-end gap-3">
+            {weekly.map((w) => {
+              const max = Math.max(1, ...weekly.map((s) => s.total));
+              const h = Math.round((w.total / max) * 100);
+              return (
+                <div key={w.day} className="flex-1 text-center">
+                  <div className="h-24 flex items-end justify-center">
+                    <div className="w-8 rounded-t-md bg-blue-600" style={{ height: `${h}%` }} />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">{w.day.slice(5)}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <p className="text-sm text-gray-500">Ringkasan Hari Ini</p>
+          <p className="mt-3 text-2xl font-inter-semibold">{formatRupiah(totalPendapatan)}</p>
+          <p className="text-sm text-gray-500 mt-1">Pendapatan kumulatif dari transaksi Lunas</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

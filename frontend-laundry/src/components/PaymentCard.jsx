@@ -6,7 +6,6 @@ import { IoQrCodeOutline } from "react-icons/io5";
 import EmptyState from "./ui/EmptyState";
 import { IoScaleOutline } from "react-icons/io5";
 
-const ONGKIR = 5000;
 
 export default function PaymentCard({ order, onPay, paymentCode }) {
   if (!order) return null;
@@ -22,7 +21,7 @@ export default function PaymentCard({ order, onPay, paymentCode }) {
   }
 
   const subtotal = order.total || order.berat * order.tarifPerKg;
-  const total = subtotal + ONGKIR;
+  const total = subtotal;
   const code = paymentCode || `PAY-${order.id.replace("#", "")}`;
 
   return (
@@ -46,10 +45,7 @@ export default function PaymentCard({ order, onPay, paymentCode }) {
             <p className="text-xs text-slate-500">Subtotal</p>
             <p className="font-semibold text-slate-900">{formatRupiah(subtotal)}</p>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3">
-            <p className="text-xs text-slate-500">Ongkir</p>
-            <p className="font-semibold text-slate-900">{formatRupiah(ONGKIR)}</p>
-          </div>
+          {/* Ongkir removed per requirement */}
         </div>
         <div className="rounded-xl border border-dashed border-slate-300 p-4 flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
@@ -60,11 +56,24 @@ export default function PaymentCard({ order, onPay, paymentCode }) {
             <p className="font-mono font-bold text-lg text-slate-900">{code}</p>
           </div>
         </div>
-        {onPay && (
-          <Button className="w-full" onClick={() => onPay(order)}>
-            Bayar Sekarang
-          </Button>
-        )}
+        {(() => {
+          const isPaid = (order.paymentStatus && order.paymentStatus === "Lunas") || order.status === "Lunas";
+          if (isPaid) {
+            return (
+              <Button className="w-full" variant="secondary" disabled>
+                Sudah Dibayar
+              </Button>
+            );
+          }
+          if (onPay) {
+            return (
+              <Button className="w-full" onClick={() => onPay(order)}>
+                Bayar Sekarang
+              </Button>
+            );
+          }
+          return null;
+        })()}
       </CardBody>
     </Card>
   );

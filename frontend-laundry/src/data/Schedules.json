@@ -1,6 +1,6 @@
 [
-  { "id": "S1", "tanggal": "2025-06-18", "jam": "08:00", "jenis": "jemput", "kapasitas": 3, "terisi": 1 },
-  { "id": "S2", "tanggal": "2025-06-18", "jam": "10:00", "jenis": "jemput", "kapasitas": 3, "terisi": 3 },
-  { "id": "S3", "tanggal": "2025-06-18", "jam": "14:00", "jenis": "antar", "kapasitas": 2, "terisi": 1 },
-  { "id": "S4", "tanggal": "2025-06-19", "jam": "09:00", "jenis": "jemput", "kapasitas": 3, "terisi": 0 }
+  { "id": "S1", "jam": "08:00", "jenis": "jemput", "terisi": 1 },
+  { "id": "S2", "jam": "10:00", "jenis": "jemput", "terisi": 1 },
+  { "id": "S3", "jam": "14:00", "jenis": "antar", "terisi": 0 },
+  { "id": "S4", "jam": "09:00", "jenis": "jemput", "terisi": 0 }
 ]

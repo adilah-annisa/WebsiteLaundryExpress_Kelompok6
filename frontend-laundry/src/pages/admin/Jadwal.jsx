@@ -8,11 +8,9 @@ const statusOptions = ["Dijemput", "Diproses", "Diantar", "Selesai"];
 
 const initialForm = {
   id: "",
-  tanggal: "",
   jam: "",
   jenis: "jemput",
-  kapasitas: "3",
-  terisi: "0",
+  done: false,
 };
 
 export default function Jadwal() {
@@ -26,9 +24,7 @@ export default function Jadwal() {
   const [page, setPage] = useState(1);
 
   const filteredSchedule = slots.filter((item) =>
-    [item.tanggal, item.jam, item.jenis].some((v) =>
-      String(v).toLowerCase().includes(search.toLowerCase())
-    )
+    [item.jam, item.jenis].some((v) => String(v).toLowerCase().includes(search.toLowerCase()))
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredSchedule.length / 5));
@@ -43,29 +39,25 @@ export default function Jadwal() {
     setEditId(slot.id);
     setForm({
       id: slot.id,
-      tanggal: slot.tanggal,
       jam: slot.jam,
       jenis: slot.jenis,
-      kapasitas: String(slot.kapasitas),
-      terisi: String(slot.terisi),
+      done: slot.done || false,
     });
     setShowForm(true);
     setError("");
   };
 
   const handleSave = () => {
-    if (!form.tanggal || !form.jam) {
-      setError("Harap lengkapi tanggal dan jam.");
+    if (!form.jam) {
+      setError("Harap lengkapi jam.");
       return;
     }
 
     const result = addSlot({
       id: editId || undefined,
-      tanggal: form.tanggal,
       jam: form.jam,
       jenis: form.jenis,
-      kapasitas: form.kapasitas,
-      terisi: form.terisi,
+      done: form.done,
     });
 
     if (!result.ok) {
@@ -127,10 +119,6 @@ export default function Jadwal() {
             )}
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">Tanggal</label>
-                <input type="date" value={form.tanggal} onChange={(e) => handleInputChange("tanggal", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" />
-              </div>
-              <div>
                 <label className="block text-sm font-semibold text-gray-600 mb-2">Jam</label>
                 <input type="time" value={form.jam} onChange={(e) => handleInputChange("jam", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" />
               </div>
@@ -142,8 +130,11 @@ export default function Jadwal() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">Kapasitas Slot</label>
-                <input type="number" min="1" value={form.kapasitas} onChange={(e) => handleInputChange("kapasitas", e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" />
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Selesai</label>
+                <select value={form.done ? "1" : "0"} onChange={(e) => handleInputChange("done", e.target.value === "1")} className="w-full px-4 py-2.5 border rounded-xl bg-white">
+                  <option value="0">Belum</option>
+                  <option value="1">Selesai</option>
+                </select>
               </div>
             </div>
             <div className="mt-6 flex gap-3 justify-end">
@@ -157,31 +148,35 @@ export default function Jadwal() {
           </div>
         )}
 
-        {filteredSchedule.length === 0 ? (
+                {filteredSchedule.length === 0 ? (
           <p className="text-center text-gray-500 py-8">Belum ada jadwal.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left">
               <thead>
                 <tr className="bg-gray-50">
-                  {["Tanggal", "Jam", "Jenis", "Kapasitas", "Terisi", "Status", "Aksi"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
-                  ))}
+                          {["Jam", "Jenis", "Status", "Aksi"].map((h) => (
+                            <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
+                          ))}
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {visibleSlots.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 text-sm">{item.tanggal}</td>
                     <td className="px-4 py-4 text-sm">{item.jam}</td>
                     <td className="px-4 py-4 text-sm capitalize">{item.jenis}</td>
-                    <td className="px-4 py-4 text-sm">{item.kapasitas}</td>
-                    <td className="px-4 py-4 text-sm">{item.terisi}/{item.kapasitas}</td>
                     <td className="px-4 py-4">
-                      <StatusBadge status={item.terisi >= item.kapasitas ? "Total" : "Diproses"} />
+                      <button
+                        type="button"
+                        disabled={item.done}
+                        onClick={() => addSlot({ id: item.id, jam: item.jam, jenis: item.jenis, terisi: item.terisi, done: true })}
+                        className={`px-3 py-1 rounded-xl text-sm font-semibold ${item.done ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-800"}`}
+                      >
+                        {item.done ? "Selesai" : "Selesai"}
+                      </button>
                     </td>
                     <td className="px-4 py-4">
-                      <button type="button" onClick={() => openEdit(item)} className="text-sm text-[#1565C0] font-semibold hover:underline">
+                      <button type="button" onClick={() => !item.done && openEdit(item)} disabled={item.done} className={`text-sm font-semibold ${item.done ? "text-gray-400" : "text-[#1565C0] hover:underline"}`}>
                         Ubah
                       </button>
                     </td>

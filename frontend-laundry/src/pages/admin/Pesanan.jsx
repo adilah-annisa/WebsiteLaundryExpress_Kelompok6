@@ -14,7 +14,7 @@ import { ADMIN_ORDER_STATUSES, formatRupiah } from "../../lib/constants";
 export default function Pesanan() {
   const { orders, setOrderWeight, getOrderById } = useData();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTag, setSelectedTag] = useState("all");
+  // status field removed per requirements
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [beratInput, setBeratInput] = useState("");
   const [message, setMessage] = useState("");
@@ -22,12 +22,8 @@ export default function Pesanan() {
 
   const filteredOrders = useMemo(() => {
     const q = searchTerm.toLowerCase();
-    return orders.filter((order) => {
-      const matchSearch = [order.nama, order.id].some((v) => v.toLowerCase().includes(q));
-      const matchStatus = selectedTag === "all" || order.status === selectedTag;
-      return matchSearch && matchStatus;
-    });
-  }, [orders, searchTerm, selectedTag]);
+    return orders.filter((order) => [order.nama, order.id].some((v) => v.toLowerCase().includes(q)));
+  }, [orders, searchTerm]);
 
   const openDetail = (order) => {
     setSelectedOrder(order);
@@ -66,15 +62,6 @@ export default function Pesanan() {
         <CardBody className="space-y-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Cari nama atau kode pesanan..." className="flex-1" />
-            <Select
-              value={selectedTag}
-              onChange={(e) => setSelectedTag(e.target.value)}
-              className="sm:w-48"
-              options={[
-                { value: "all", label: "Semua Status" },
-                ...ADMIN_ORDER_STATUSES.map((s) => ({ value: s, label: s })),
-              ]}
-            />
           </div>
 
           <Table
@@ -97,7 +84,7 @@ export default function Pesanan() {
                 label: "Total",
                 render: (row) => (row.total != null ? formatRupiah(row.total) : "-"),
               },
-              { key: "status", label: "Status", render: (row) => <StatusBadge status={row.status} /> },
+              // status column removed per requirements
               {
                 key: "aksi",
                 label: "Aksi",
@@ -140,11 +127,11 @@ export default function Pesanan() {
               <p><span className="text-slate-500">Tarif:</span> Rp {selectedOrder.tarifPerKg.toLocaleString("id-ID")}/Kg</p>
               <p><span className="text-slate-500">Jadwal:</span> {selectedOrder.tanggal ? `${selectedOrder.tanggal} ${selectedOrder.jam}` : "Belum dipilih"}</p>
               <p><span className="text-slate-500">Jenis Antar-Jemput:</span> {
-                selectedOrder.pengantaran === "jemput" ? "Jemput ke Rumah" :
-                selectedOrder.pengantaran === "antar" ? "Antar ke Laundry" :
+                selectedOrder.pengantaran === "jemput" ? "Jemput Saja" :
+                selectedOrder.pengantaran === "antar" ? "Antar Saja" :
                 "Antar-Jemput"
               }</p>
-              <p><span className="text-slate-500">Status:</span> <StatusBadge status={selectedOrder.status} /></p>
+              {/* Status removed from admin detail per requirements */}
             </div>
 
             <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">

@@ -21,7 +21,8 @@ export default function DetailBiaya() {
   );
 
   const handlePay = (o) => {
-    updateOrder(o.id, { paymentStatus: "Lunas" });
+    // Mark order as paid — set both paymentStatus and status to "Lunas"
+    updateOrder(o.id, { paymentStatus: "Lunas", status: "Lunas" });
     showToast(`Pembayaran ${o.id} berhasil dicatat.`, "success");
   };
 
@@ -46,9 +47,10 @@ export default function DetailBiaya() {
             options={orders.map((o) => ({ value: o.id, label: `${o.id} — ${o.layananLabel}` }))}
           />
           <div className="space-y-2 max-h-[420px] overflow-y-auto">
-            {orders.map((o) => (
-              <OrderCard key={o.id} order={o} selected={o.id === selectedOrder} onClick={() => setSelectedOrder(o.id)} />
-            ))}
+            {orders.map((o) => {
+              if (o.status === "Sedang Disetrika" || o.status === "Diproses") return null;
+              return <OrderCard key={o.id} order={o} selected={o.id === selectedOrder} onClick={() => setSelectedOrder(o.id)} />;
+            })}
           </div>
         </div>
         <PaymentCard order={order} onPay={handlePay} />
