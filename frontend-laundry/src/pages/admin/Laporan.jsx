@@ -84,33 +84,6 @@ export default function Laporan() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6">
-              <p className="text-sm text-slate-500 uppercase tracking-[0.2em]">Rincian</p>
-              <div className="mt-4 space-y-3 text-sm text-slate-700">
-                {[
-                  ["Total transaksi", "1.248"],
-                  ["Pesanan selesai", "1.180"],
-                  ["Pesanan dibatalkan", "23"],
-                  ["Rata-rata order", "Rp 116.000"],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span>{label}</span>
-                    <span className="font-inter-semibold">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-              <p className="text-sm text-slate-500 uppercase tracking-[0.2em]">Rekomendasi</p>
-              <ul className="mt-4 space-y-3 text-sm text-slate-700">
-                <li>• Tambahkan promo paket selama minggu sepi.</li>
-                <li>• Optimalkan jadwal kurir untuk rute populer.</li>
-                <li>• Gunakan notifikasi SMS untuk pelanggan baru.</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </div>

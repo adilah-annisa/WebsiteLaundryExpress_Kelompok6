@@ -20,15 +20,16 @@ export default function DashboardPelanggan() {
   const { getOrdersForCustomer } = useData();
   const orders = getOrdersForCustomer(user.customerId);
 
+  const activeOrders = orders.filter((o) => o.status !== "Selesai");
+  const confirmableOrders = orders.filter((o) => o.status === "Diantar" && o.bukti?.foto);
+  const recentOrders = orders.slice(-3).reverse();
+
   const stats = [
     { label: "Total Pesanan", value: String(orders.length), icon: IoShirtOutline, color: "#3B82F6", bgIcon: "bg-blue-50" },
     { label: "Selesai", value: String(orders.filter((o) => o.status === "Selesai").length), icon: IoCubeOutline, color: "#22C55E", bgIcon: "bg-green-50" },
-    { label: "Diproses", value: String(orders.filter((o) => ["Diproses", "Dijemput", "Diantar"].includes(o.status)).length), icon: IoTimeOutline, color: "#F59E0B", bgIcon: "bg-yellow-50" },
-    { label: "Menunggu Jadwal", value: String(orders.filter((o) => !o.slotId && o.status === "Diproses").length), icon: IoCloseCircleOutline, color: "#EF4444", bgIcon: "bg-red-50" },
+    { label: "Sedang Berlangsung", value: String(activeOrders.length), icon: IoTimeOutline, color: "#F59E0B", bgIcon: "bg-yellow-50" },
+    { label: "Perlu Konfirmasi", value: String(confirmableOrders.length), icon: IoCloseCircleOutline, color: "#EF4444", bgIcon: "bg-red-50" },
   ];
-
-  const activeOrders = orders.filter((o) => o.status !== "Selesai");
-  const confirmableOrders = orders.filter((o) => o.status === "Diantar" && o.bukti?.foto);
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto space-y-8">
@@ -47,12 +48,12 @@ export default function DashboardPelanggan() {
             <div className="space-y-3">
               <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-700">Langkah selanjutnya</p>
-                <p className="text-sm text-slate-500 mt-1">Pesanan dibuat → Laundry diproses → Kurir upload bukti → Anda konfirmasi selesai.</p>
+                <p className="text-sm text-slate-500 mt-1">Pesanan dibuat → Laundry sedang berjalan → Kurir upload bukti → Anda konfirmasi selesai.</p>
               </div>
 
               {confirmableOrders.length > 0 ? (
                 <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                  <p className="text-sm font-semibold text-blue-800">Konfirmasi menunggu</p>
+                  <p className="text-sm font-semibold text-blue-800">Konfirmasi tersedia</p>
                   <p className="text-sm text-blue-700 mt-2">Ada {confirmableOrders.length} pesanan dalam status Diantar dengan bukti, silakan konfirmasi.</p>
                   <Link to="/pelanggan/konfirmasi" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#1565C0] hover:text-[#0f4d8a]">
                     Buka Konfirmasi <IoChevronForwardOutline />
@@ -71,7 +72,7 @@ export default function DashboardPelanggan() {
 
       <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         <Card>
-          <CardHeader title="Pesanan Aktif" subtitle="Daftar pesanan yang masih dalam perjalanan atau diproses" />
+          <CardHeader title="Pesanan Aktif" subtitle="Daftar pesanan yang masih dalam perjalanan atau dalam proses" />
           <CardBody>
             {activeOrders.length === 0 ? (
               <EmptyState
@@ -114,7 +115,7 @@ export default function DashboardPelanggan() {
             <div className="space-y-3">
               <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
                 <p className="text-sm font-semibold text-slate-800">1. Order dibuat</p>
-                <p className="text-sm text-slate-500 mt-1">Pesanan Anda telah dikirim ke sistem dan sedang diproses.</p>
+                <p className="text-sm text-slate-500 mt-1">Pesanan Anda telah dikirim ke sistem dan sedang diproses oleh tim laundry.</p>
               </div>
               <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
                 <p className="text-sm font-semibold text-slate-800">2. Kurir mengunggah bukti</p>
@@ -128,6 +129,48 @@ export default function DashboardPelanggan() {
           </CardBody>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader title="Riwayat Pesanan Terakhir" subtitle="Ringkasan pesanan terbaru Anda" />
+        <CardBody>
+          {recentOrders.length === 0 ? (
+            <EmptyState
+              icon={IoCheckmarkCircleOutline}
+              title="Belum ada riwayat pesanan"
+              description="Pesanan terbaru Anda akan muncul di sini setelah dibuat."
+              action={<Link to="/pelanggan/pemesanan" className="inline-flex items-center rounded-xl bg-[#1565C0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f4d8a]">Buat Pesanan Baru</Link>}
+            />
+          ) : (
+            <div className="space-y-4">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="rounded-2xl border border-slate-200 p-4 hover:shadow-sm transition-shadow">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <p className="text-sm text-slate-500">{order.id}</p>
+                      <p className="text-base font-semibold text-slate-900 truncate">{order.layananLabel || order.layanan || "Layanan"}</p>
+                    </div>
+                    <StatusBadge status={order.status} />
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-3 text-sm text-slate-600">
+                    <div>
+                      <p className="font-medium text-slate-700">Tanggal</p>
+                      <p>{order.tanggal || order.date || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-700">Pengantaran</p>
+                      <p>{order.pengantaran === "jemput" ? "Penjemputan" : order.pengantaran === "antar" ? "Pengantaran" : "Antar-Jemput"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-700">Total</p>
+                      <p>{order.total != null ? `Rp ${Number(order.total).toLocaleString("id-ID")}` : "-"}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
     </div>
   );
 }

@@ -359,23 +359,28 @@ export function DataProvider({ children }) {
 
   const addTransaction = useCallback(
     (payload) => {
-      if (!payload.seri || !payload.name || !payload.date || !payload.amount) {
-        return { ok: false, message: "Data transaksi belum lengkap." };
+      if (!payload.amount) {
+        return { ok: false, message: "Jumlah nominal pendapatan belum diisi." };
       }
 
       let newTx = null;
       update((prev) => {
         const counter = prev.transactionCounter + 1;
+        const date = payload.date || new Date().toISOString().slice(0, 10);
         const amountNum = Number(String(payload.amount).replace(/[^0-9]/g, "")) || 0;
+        const amount = payload.amount.startsWith("Rp") ? payload.amount : formatRupiah(amountNum);
+        const seri = payload.seri || `REV-${date.replace(/-/g, "")}-${String(counter).padStart(3, "0")}`;
+
         newTx = {
           id: `T${String(counter).padStart(3, "0")}`,
-          orderId: payload.orderId || payload.seri,
-          seri: payload.seri,
-          name: payload.name,
-          date: payload.date,
-          amount: payload.amount.startsWith("Rp") ? payload.amount : formatRupiah(amountNum),
+          orderId: payload.orderId || seri,
+          seri,
+          name: payload.name || "Pendapatan Harian",
+          date,
+          amount,
           amountNum,
           status: payload.status || "Lunas",
+          keterangan: payload.keterangan || "",
         };
         return {
           ...prev,
