@@ -11,6 +11,21 @@ export const PENGANTARAN_OPTIONS = [
   { value: "antar-jemput", label: "Antar-Jemput" },
 ];
 
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: "Tunai", label: "Tunai" },
+  { value: "QRIS", label: "QRIS" },
+  { value: "Transfer Bank", label: "Transfer Bank" },
+  { value: "Dana", label: "Dana" },
+  { value: "OVO", label: "OVO" },
+  { value: "GoPay", label: "GoPay" },
+  { value: "ShopeePay", label: "ShopeePay" },
+];
+
+export const PAYMENT_STATUS_OPTIONS = [
+  { value: "Belum Dibayar", label: "Belum Dibayar" },
+  { value: "Lunas", label: "Lunas" },
+];
+
 export const ORDER_STATUSES = [
   "Diproses",
   "Dijemput",

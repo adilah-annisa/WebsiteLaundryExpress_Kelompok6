@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import PageHeader from "../../DashboardAdmin/components/PageHeader";
 import StatusBadge from "../../DashboardAdmin/components/StatusBadge";
 import { useData } from "../../context/DataContext";
-import { formatRupiah } from "../../lib/constants";
+import { formatRupiah, PAYMENT_METHOD_OPTIONS, PAYMENT_STATUS_OPTIONS } from "../../lib/constants";
+import Pagination from "../../components/ui/Pagination";
 
-const initialForm = { amount: "", keterangan: "" };
+const initialForm = { amount: "", keterangan: "", paymentMethod: "Tunai", paymentStatus: "Lunas" };
 
 export default function Keuangan() {
   const { transactions, addTransaction } = useData();
@@ -16,10 +17,45 @@ export default function Keuangan() {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [methodFilter, setMethodFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
 
   const monthRecords = useMemo(
     () => transactions.filter((item) => item.date?.slice(0, 7) === selectedMonth),
     [transactions, selectedMonth]
+  );
+  const nonCashTransactions = useMemo(
+    () => monthRecords.filter((item) => item.paymentMethod && item.paymentMethod !== "Tunai"),
+    [monthRecords]
+  );
+  const nonCashMonthlyTotal = useMemo(
+    () => nonCashTransactions.reduce((sum, item) => sum + (item.amountNum || 0), 0),
+    [nonCashTransactions]
+  );
+  const filteredNonCash = useMemo(
+    () =>
+      nonCashTransactions.filter((item) => {
+        if (methodFilter && item.paymentMethod !== methodFilter) return false;
+        if (statusFilter && item.paymentStatus !== statusFilter) return false;
+        if (!searchTerm) return true;
+        const keyword = searchTerm.toLowerCase();
+        return [item.orderId, item.name, item.paymentMethod, item.paymentStatus, item.date]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(keyword));
+      }),
+    [nonCashTransactions, methodFilter, statusFilter, searchTerm]
+  );
+  const totalNonCash = useMemo(
+    () => filteredNonCash.reduce((sum, item) => sum + (item.amountNum || 0), 0),
+    [filteredNonCash]
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredNonCash.length / rowsPerPage));
+  const pagedTransactions = useMemo(
+    () => filteredNonCash.slice((page - 1) * rowsPerPage, page * rowsPerPage),
+    [filteredNonCash, page, rowsPerPage]
   );
 
   const monthlyTotal = useMemo(
@@ -33,6 +69,12 @@ export default function Keuangan() {
       value: formatRupiah(monthlyTotal),
       bg: "bg-green-50",
       text: "text-green-700",
+    },
+    {
+      label: "Transaksi Non Tunai Bulanan",
+      value: formatRupiah(nonCashMonthlyTotal),
+      bg: "bg-blue-50",
+      text: "text-blue-700",
     },
   ];
 
@@ -53,8 +95,10 @@ export default function Keuangan() {
       name: "Pendapatan Harian",
       date: todayDate,
       amount: form.amount.trim().startsWith("Rp") ? form.amount.trim() : `Rp ${Number(form.amount).toLocaleString("id-ID")}`,
+      paymentMethod: form.paymentMethod,
+      paymentStatus: form.paymentStatus,
       keterangan: form.keterangan,
-      status: "Lunas",
+      status: form.paymentStatus,
     });
 
     if (!result.ok) {
@@ -138,6 +182,30 @@ export default function Keuangan() {
                   className="w-full px-4 py-2.5 border rounded-xl"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Metode Pembayaran</label>
+                <select
+                  value={form.paymentMethod}
+                  onChange={(e) => handleInputChange("paymentMethod", e.target.value)}
+                  className="w-full rounded-xl border px-4 py-2.5 text-sm"
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-3">
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Status Pembayaran</label>
+                <select
+                  value={form.paymentStatus}
+                  onChange={(e) => handleInputChange("paymentStatus", e.target.value)}
+                  className="w-full rounded-xl border px-4 py-2.5 text-sm"
+                >
+                  {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
               <div className="md:col-span-3">
                 <label className="block text-sm font-semibold text-gray-600 mb-2">Keterangan (Opsional)</label>
                 <input
@@ -188,6 +256,100 @@ export default function Keuangan() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-lg font-semibold text-slate-900">Transaksi Non Tunai</p>
+            <p className="mt-1 text-sm text-slate-500">Pantau transaksi QRIS, transfer bank, dan dompet digital.</p>
+          </div>
+          <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 mb-2">Cari</label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Cari order, nama, atau metode"
+                className="w-full rounded-xl border px-4 py-2.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 mb-2">Metode Pembayaran</label>
+              <select
+                value={methodFilter}
+                onChange={(e) => {
+                  setMethodFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border px-4 py-2.5 text-sm"
+              >
+                <option value="">Semua Metode</option>
+                {PAYMENT_METHOD_OPTIONS.filter((opt) => opt.value !== "Tunai").map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 mb-2">Status Pembayaran</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border px-4 py-2.5 text-sm"
+              >
+                <option value="">Semua Status</option>
+                {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs text-slate-500">Total Non Tunai</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900">{formatRupiah(totalNonCash)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border">
+          <table className="min-w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                {["Tanggal", "Order / Seri", "Nama", "Metode", "Status", "Nominal"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-xs font-semibold uppercase text-gray-600">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {pagedTransactions.length > 0 ? (
+                pagedTransactions.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 text-sm">{item.date}</td>
+                    <td className="px-4 py-4 text-sm">{item.orderId || item.seri}</td>
+                    <td className="px-4 py-4 text-sm">{item.name}</td>
+                    <td className="px-4 py-4 text-sm">{item.paymentMethod || "Tunai"}</td>
+                    <td className="px-4 py-4 text-sm"><StatusBadge status={item.paymentStatus || item.status} /></td>
+                    <td className="px-4 py-4 text-sm font-semibold text-slate-900">{item.amount}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-6 py-14 text-center text-gray-500">
+                    Tidak ada transaksi non tunai yang sesuai filter.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
     </div>
   );

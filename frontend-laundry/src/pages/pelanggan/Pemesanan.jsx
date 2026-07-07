@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { useToast } from "../../context/ToastContext";
-import { PENGANTARAN_OPTIONS } from "../../lib/constants";
+import { PENGANTARAN_OPTIONS, PAYMENT_METHOD_OPTIONS } from "../../lib/constants";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -24,6 +24,7 @@ export default function Pemesanan() {
     alamat: customer?.address || "",
     layanan: "",
     pengantaran: "jemput",
+    paymentMethod: "Tunai",
     catatan: "",
   });
 
@@ -44,6 +45,7 @@ export default function Pemesanan() {
       alamat: customer?.address || "",
       layanan: "",
       pengantaran: "jemput",
+      paymentMethod: "Tunai",
       catatan: "",
     });
     setError("");
@@ -65,6 +67,7 @@ export default function Pemesanan() {
         alamat: formData.alamat.trim(),
         layanan: formData.layanan,
         pengantaran: formData.pengantaran,
+        paymentMethod: formData.paymentMethod,
         catatan: formData.catatan.trim(),
       });
       setLastOrderId(order.id);
@@ -107,6 +110,13 @@ export default function Pemesanan() {
                 />
               </div>
               <Textarea label="Alamat Lengkap *" name="alamat" rows={3} value={formData.alamat} onChange={handleChange} />
+              <Select
+                label="Metode Pembayaran *"
+                name="paymentMethod"
+                value={formData.paymentMethod}
+                onChange={handleChange}
+                options={PAYMENT_METHOD_OPTIONS}
+              />
               <Textarea label="Catatan (Opsional)" name="catatan" rows={2} value={formData.catatan} onChange={handleChange} />
 
               <div className="rounded-xl bg-amber-50 border border-amber-100 p-4 text-sm text-amber-800">

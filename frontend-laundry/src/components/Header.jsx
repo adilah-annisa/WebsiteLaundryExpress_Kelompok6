@@ -8,7 +8,6 @@ const pageTitles = {
   "/dashboard/pesanan": "Kelola Pesanan",
   "/dashboard/jadwal": "Slot Waktu Penjemputan",
   "/dashboard/keuangan": "Keuangan",
-  "/dashboard/laporan": "Laporan Pendapatan",
   "/dashboard/pelanggan-admin": "Kelola Pelanggan",
 
   "/pelanggan": "Dashboard Pelanggan",

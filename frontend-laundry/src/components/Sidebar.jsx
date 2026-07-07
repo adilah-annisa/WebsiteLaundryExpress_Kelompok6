@@ -16,7 +16,6 @@ export default function Sidebar({ open = false, onClose }) {
         { icon: GoListOrdered, label: "Pesanan", path: "/dashboard/pesanan" },
         { icon: MdOutlineSchedule, label: "Jadwal", path: "/dashboard/jadwal" },
         { icon: MdAttachMoney, label: "Keuangan", path: "/dashboard/keuangan" },
-        { icon: MdBarChart, label: "Laporan", path: "/dashboard/laporan" },
     ];
 
     useEffect(() => {
