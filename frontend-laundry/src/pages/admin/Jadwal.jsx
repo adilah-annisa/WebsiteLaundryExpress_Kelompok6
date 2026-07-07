@@ -73,20 +73,7 @@ export default function Jadwal() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Kelola Jadwal Antar-Jemput"
-        showSearch={false}
-        showAdd
-        addText="Tambah Slot"
-        onAdd={() => {
-          setShowForm(true);
-          setEditId(null);
-          setForm(initialForm);
-          setError("");
-        }}
-      />
-
+    <div className="">
       <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
         <div className="grid gap-4 md:grid-cols-2 items-end">
           <div>
@@ -95,12 +82,11 @@ export default function Jadwal() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari tanggal atau jam..."
+              placeholder="Cari  jam..."
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            Kurir: <strong>{KURIR_NAMA}</strong> (1 kurir)
+          <div>
           </div>
         </div>
 

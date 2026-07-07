@@ -121,8 +121,6 @@ export default function Keuangan() {
         </div>
       )}
 
-      <PageHeader title="Keuangan & Pendapatan" subtitle="Catat pendapatan harian dan pantau total" showSearch={false} />
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {summaryCards.map((card) => (
           <div key={card.label} className={`rounded-2xl p-6 shadow-sm ${card.bg}`}>
