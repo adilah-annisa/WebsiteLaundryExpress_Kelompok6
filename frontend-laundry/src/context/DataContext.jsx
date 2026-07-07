@@ -14,6 +14,9 @@ import {
 const DataContext = createContext(null);
 
 function buildOrderRecord(payload) {
+  const paymentMethod = payload.paymentMethod || payload.metode_pembayaran || "Tunai";
+  const paymentStatus = payload.paymentStatus || payload.status_pembayaran || (paymentMethod === "Tunai" ? "Lunas" : "Belum Dibayar");
+
   return {
     id_pesanan: payload.id_pesanan || payload.id || "",
     id_pelanggan: payload.id_pelanggan || payload.customerId || "",
@@ -24,6 +27,10 @@ function buildOrderRecord(payload) {
     jenis_layanan: payload.jenis_layanan || payload.layanan || "",
     total_biaya: payload.total_biaya ?? payload.total ?? null,
     status: payload.status || "Diproses",
+    paymentMethod,
+    metode_pembayaran: paymentMethod,
+    paymentStatus,
+    status_pembayaran: paymentStatus,
     id: payload.id || payload.id_pesanan || "",
     customerId: payload.id_pelanggan || payload.customerId || "",
     nama: payload.nama,
@@ -98,6 +105,12 @@ function normalizeOrderUpdates(changes) {
   if (Object.prototype.hasOwnProperty.call(changes, "tanggal")) {
     next.tanggal_pesanan = changes.tanggal;
   }
+  if (Object.prototype.hasOwnProperty.call(changes, "paymentMethod")) {
+    next.metode_pembayaran = changes.paymentMethod;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "paymentStatus")) {
+    next.status_pembayaran = changes.paymentStatus;
+  }
   return next;
 }
 
@@ -148,6 +161,9 @@ export function DataProvider({ children }) {
     const layanan = getLayananByValue(payload.layanan || (LAYANAN_OPTIONS[0] && LAYANAN_OPTIONS[0].value));
     if (!layanan) throw new Error("Jenis layanan tidak valid.");
 
+    const paymentMethod = payload.paymentMethod || payload.metode_pembayaran || "Tunai";
+    const paymentStatus = paymentMethod === "Tunai" ? "Lunas" : payload.paymentStatus || payload.status_pembayaran || "Belum Dibayar";
+
     let newOrder = null;
     update((prev) => {
       const counter = prev.orderCounter + 1;
@@ -171,6 +187,10 @@ export function DataProvider({ children }) {
         berat: null,
         total: null,
         status: "Diproses",
+        paymentMethod,
+        metode_pembayaran: paymentMethod,
+        paymentStatus,
+        status_pembayaran: paymentStatus,
         pengantaran: payload.pengantaran || "jemput",
         transportKotor,
         transportBersih,
@@ -370,6 +390,8 @@ export function DataProvider({ children }) {
         const amountNum = Number(String(payload.amount).replace(/[^0-9]/g, "")) || 0;
         const amount = payload.amount.startsWith("Rp") ? payload.amount : formatRupiah(amountNum);
         const seri = payload.seri || `REV-${date.replace(/-/g, "")}-${String(counter).padStart(3, "0")}`;
+        const paymentMethod = payload.paymentMethod || payload.metode_pembayaran || "Tunai";
+        const paymentStatus = payload.paymentStatus || payload.status_pembayaran || (paymentMethod === "Tunai" ? "Lunas" : "Belum Dibayar");
 
         newTx = {
           id: `T${String(counter).padStart(3, "0")}`,
@@ -379,7 +401,11 @@ export function DataProvider({ children }) {
           date,
           amount,
           amountNum,
-          status: payload.status || "Lunas",
+          status: payload.status || paymentStatus,
+          paymentMethod,
+          metode_pembayaran: paymentMethod,
+          paymentStatus,
+          status_pembayaran: paymentStatus,
           keterangan: payload.keterangan || "",
         };
         return {
