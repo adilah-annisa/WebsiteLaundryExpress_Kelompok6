@@ -12,6 +12,89 @@ import {
 
 const DataContext = createContext(null);
 
+function buildOrderRecord(payload) {
+  return {
+    id_pesanan: payload.id_pesanan || payload.id || "",
+    id_pelanggan: payload.id_pelanggan || payload.customerId || "",
+    id_jadwal: payload.id_jadwal || payload.slotId || null,
+    id_kurir: payload.id_kurir || null,
+    tanggal_pesanan: payload.tanggal_pesanan || payload.tanggal || "",
+    berat_kg: payload.berat_kg ?? payload.berat ?? null,
+    jenis_layanan: payload.jenis_layanan || payload.layanan || "",
+    total_biaya: payload.total_biaya ?? payload.total ?? null,
+    status: payload.status || "Diproses",
+    id: payload.id || payload.id_pesanan || "",
+    customerId: payload.id_pelanggan || payload.customerId || "",
+    nama: payload.nama,
+    nohp: payload.nohp,
+    alamat: payload.alamat,
+    layanan: payload.layanan || payload.jenis_layanan || "",
+    layananLabel: payload.layananLabel || "",
+    tarifPerKg: payload.tarifPerKg ?? null,
+    berat: payload.berat ?? payload.berat_kg ?? null,
+    total: payload.total ?? payload.total_biaya ?? null,
+    pengantaran: payload.pengantaran || "jemput",
+    slotId: payload.slotId || payload.id_jadwal || null,
+    tanggal: payload.tanggal || payload.tanggal_pesanan || "",
+    jam: payload.jam || "",
+    catatan: payload.catatan || "",
+    bukti: payload.bukti || null,
+    createdAt: payload.createdAt || new Date().toISOString().split("T")[0],
+  };
+}
+
+function buildCustomerRecord(payload) {
+  return {
+    id_pelanggan: payload.id_pelanggan || payload.id || "",
+    nama: payload.nama || payload.name || "",
+    alamat: payload.alamat || payload.address || "",
+    no_hp: payload.no_hp || payload.phone || "",
+    id: payload.id || payload.id_pelanggan || "",
+    name: payload.nama || payload.name || "",
+    address: payload.alamat || payload.address || "",
+    phone: payload.no_hp || payload.phone || "",
+    email: payload.email || "",
+  };
+}
+
+function buildSlotRecord(payload) {
+  return {
+    id: payload.id || payload.id_jadwal || "",
+    id_jadwal: payload.id_jadwal || payload.id || "",
+    tanggal: payload.tanggal || "",
+    jam: payload.jam || payload.jam_jemput || "",
+    jenis: payload.jenis || "jemput",
+    kapasitas: Number(payload.kapasitas) || 3,
+    terisi: Number(payload.terisi) || 0,
+    jam_jemput: payload.jam_jemput || payload.jam || "",
+    jam_antar: payload.jam_antar || "",
+    keterangan: payload.keterangan || "",
+  };
+}
+
+function normalizeOrderUpdates(changes) {
+  const next = { ...changes };
+  if (Object.prototype.hasOwnProperty.call(changes, "berat")) {
+    next.berat_kg = changes.berat;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "total")) {
+    next.total_biaya = changes.total;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "layanan")) {
+    next.jenis_layanan = changes.layanan;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "customerId")) {
+    next.id_pelanggan = changes.customerId;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "slotId")) {
+    next.id_jadwal = changes.slotId;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "tanggal")) {
+    next.tanggal_pesanan = changes.tanggal;
+  }
+  return next;
+}
+
 export function DataProvider({ children }) {
   const [data, setData] = useState(() => createInitialData());
   const [loading, setLoading] = useState(true);
@@ -62,7 +145,7 @@ export function DataProvider({ children }) {
     let newOrder = null;
     update((prev) => {
       const counter = prev.orderCounter + 1;
-      newOrder = {
+      newOrder = buildOrderRecord({
         id: `#P${String(counter).padStart(3, "0")}`,
         customerId: payload.customerId,
         nama: payload.nama,
@@ -81,7 +164,7 @@ export function DataProvider({ children }) {
         catatan: payload.catatan || "",
         bukti: null,
         createdAt: new Date().toISOString().split("T")[0],
-      };
+      });
       return {
         ...prev,
         orderCounter: counter,
@@ -93,9 +176,12 @@ export function DataProvider({ children }) {
 
   const updateOrder = useCallback(
     (orderId, changes) => {
+      const normalizedChanges = normalizeOrderUpdates(changes);
       update((prev) => ({
         ...prev,
-        orders: prev.orders.map((o) => (o.id === orderId ? { ...o, ...changes } : o)),
+        orders: prev.orders.map((o) =>
+          o.id === orderId ? { ...o, ...normalizedChanges } : o
+        ),
       }));
     },
     [update]
@@ -132,13 +218,15 @@ export function DataProvider({ children }) {
 
         const orders = prev.orders.map((o) =>
           o.id === orderId
-            ? {
+            ? buildOrderRecord({
                 ...o,
                 slotId,
+                id_jadwal: slot.id_jadwal || slot.id,
                 tanggal: slot.tanggal,
                 jam: slot.jam,
+                tanggal_pesanan: slot.tanggal,
                 pengantaran: slot.jenis === "antar" ? "antar" : o.pengantaran,
-              }
+              })
             : o
         );
 
@@ -175,14 +263,18 @@ export function DataProvider({ children }) {
         }
 
         const id = slotPayload.id || `S${Date.now()}`;
-        const newSlot = {
+        const newSlot = buildSlotRecord({
           id,
+          id_jadwal: slotPayload.id_jadwal || slotPayload.id || id,
           tanggal: slotPayload.tanggal,
           jam: slotPayload.jam,
           jenis: slotPayload.jenis,
           kapasitas: Number(slotPayload.kapasitas) || 3,
           terisi: Number(slotPayload.terisi) || 0,
-        };
+          jam_jemput: slotPayload.jam_jemput || slotPayload.jam || "",
+          jam_antar: slotPayload.jam_antar || "",
+          keterangan: slotPayload.keterangan || "",
+        });
 
         const exists = prev.slots.some((s) => s.id === id);
         const slots = exists
@@ -280,10 +372,10 @@ export function DataProvider({ children }) {
       }
       let customer = null;
       update((prev) => {
-        customer = {
+        customer = buildCustomerRecord({
           id: `C${String(prev.customers.length + 1).padStart(3, "0")}`,
           ...payload,
-        };
+        });
         return { ...prev, customers: [customer, ...prev.customers] };
       });
       return { ok: true, customer };
