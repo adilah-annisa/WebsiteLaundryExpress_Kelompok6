@@ -2,10 +2,10 @@ import { useMemo, useState } from "react";
 import {
   IoCubeOutline,
   IoShirtOutline,
-  IoTimeOutline,
   IoCheckmarkCircleOutline,
   IoTrendingUpOutline,
 } from "react-icons/io5";
+
 import StatCard from "../../components/StatCard";
 
 const monthlyData = [
@@ -17,142 +17,329 @@ const monthlyData = [
   { bulan: "Jun", nilai: 88 },
 ];
 
-export default function Laporan() {
+export default function Dashboard() {
   const [toast, setToast] = useState("");
-  const maxNilai = Math.max(...monthlyData.map((d) => d.nilai));
+
+  const maxNilai = Math.max(
+    ...monthlyData.map((item) => item.nilai)
+  );
 
   const summary = useMemo(() => {
-    const completedOrders = 1180;
-    const monthlyGrowth = 12;
-
     return [
       {
-        label: "Pendapatan Bulanan",
+        label: "Total Pesanan",
+        value: "1.180",
+        color: "#2563eb",
+        bgIcon: "bg-blue-50",
+        icon: IoShirtOutline,
+      },
+      {
+        label: "Pendapatan Bulan Ini",
         value: "Rp 1.248.000",
         color: "#10b981",
         bgIcon: "bg-green-50",
         icon: IoCubeOutline,
       },
       {
-        label: "Pendapatan Mingguan",
-        value: "Rp 300.000",
-        color: "#3b82f6",
-        bgIcon: "bg-blue-50",
-        icon: IoShirtOutline,
-      },
-      {
-        label: "Pertumbuhan",
-        value: `${monthlyGrowth}%`,
-        color: "#f59e0b",
-        bgIcon: "bg-yellow-50",
-        icon: IoTimeOutline,
-      },
-      {
-        label: "Pesanan Selesai",
-        value: completedOrders,
+        label: "Laundry Selesai",
+        value: "1.025",
         color: "#22c55e",
         bgIcon: "bg-emerald-50",
         icon: IoCheckmarkCircleOutline,
       },
+      {
+        label: "Pertumbuhan",
+        value: "+12%",
+        color: "#f59e0b",
+        bgIcon: "bg-yellow-50",
+        icon: IoTrendingUpOutline,
+      },
     ];
   }, []);
 
-  const handleExport = () => {
-    setToast("Laporan PDF sedang disiapkan...");
-    setTimeout(() => setToast(""), 3000);
+
+  const handleUpdate = () => {
+    setToast("Dashboard berhasil diperbarui");
+
+    setTimeout(() => {
+      setToast("");
+    }, 3000);
   };
+
 
   return (
     <div className="space-y-8 max-w-screen-2xl mx-auto">
+
+      {/* Toast */}
       {toast && (
-        <div className="fixed top-4 right-4 z-50 rounded-xl bg-slate-900 text-white px-5 py-3 text-sm font-inter-semibold shadow-lg">
+        <div className="
+          fixed top-5 right-5 z-50
+          rounded-xl
+          bg-slate-900
+          text-white
+          px-5 py-3
+          text-sm
+          font-semibold
+          shadow-lg
+        ">
           {toast}
         </div>
       )}
 
-      {/* Header */}
-      <div className="rounded-2xl bg-linear-to-r from-[#1565C0] to-[#3b6fd8] p-6 text-white shadow-lg">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+      {/* HEADER */}
+      <div className="
+        rounded-3xl
+        bg-gradient-to-r
+        from-[#1565C0]
+        to-[#3b82f6]
+        p-8
+        text-white
+        shadow-lg
+      ">
+
+        <div className="
+          flex
+          flex-col
+          md:flex-row
+          md:items-center
+          md:justify-between
+          gap-6
+        ">
+
           <div>
-            <div>
-                <p className="text-blue-100 text-sm font-poppins">
-                    Laundry Express — Panel Pemilik
-                </p>
 
-                <h2 className="font-inter-semibold text-2xl mt-1">
-                    Selamat datang, Admin!
-                </h2>
+            <p className="
+              text-blue-100
+              text-sm
+              uppercase
+              tracking-wider
+            ">
+              Laundry Express
+            </p>
 
-                <p className="text-blue-100 text-sm mt-2 font-poppins">
-                    Pantau pesanan, jadwal, dan keuangan laundry Anda.
-                </p>
-                </div>
+
+            <h1 className="
+              text-3xl
+              md:text-4xl
+              font-bold
+              mt-2
+            ">
+              Selamat Datang, Admin 👋
+            </h1>
+
+
+            <p className="
+              text-blue-100
+              mt-4
+              max-w-xl
+            ">
+              Pantau Perkembangan Keuangan Anda
+            </p>
+
+
           </div>
 
-          <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
-            <IoTrendingUpOutline className="text-2xl" />
+
+          <div className="
+            bg-white/10
+            rounded-2xl
+            p-5
+            backdrop-blur-sm
+          ">
+            <IoTrendingUpOutline
+              className="text-6xl"
+            />
           </div>
+
+
         </div>
+
       </div>
 
-      {/* Statistik */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        {summary.map((item, index) => (
+
+
+      {/* STAT CARD */}
+
+      <div className="
+        grid
+        grid-cols-1
+        sm:grid-cols-2
+        xl:grid-cols-4
+        gap-6
+      ">
+
+        {summary.map((item,index)=>(
+
           <StatCard
+
             key={index}
+
             icon={item.icon}
+
             label={item.label}
+
             value={item.value}
+
             color={item.color}
+
             bgIcon={item.bgIcon}
+
           />
+
         ))}
+
       </div>
 
-      {/* Grafik */}
-      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-inter-semibold text-slate-900">
-              Ringkasan Laporan Pendapatan
-            </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Lihat tren pendapatan bulanan dan kinerja laundry Anda.
-            </p>
-          </div>
+
+
+
+      {/* GRAFIK */}
+
+      <div className="
+        rounded-3xl
+        border
+        border-slate-200
+        bg-white
+        shadow-sm
+        p-6
+      ">
+
+
+        <div>
+
+          <h2 className="
+            text-2xl
+            font-bold
+            text-slate-900
+          ">
+            Ringkasan Dashboard
+          </h2>
+
+
+          <p className="
+            mt-2
+            text-sm
+            text-slate-500
+          ">
+            Pantau perkembangan pendapatan Laundry Express selama enam bulan terakhir.
+          </p>
+
+
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
-              Grafik Pendapatan (6 Bulan)
-            </p>
 
-            <div className="mt-8 h-72 flex items-end justify-between gap-3 px-2">
-              {monthlyData.map((item) => (
-                <div
-                  key={item.bulan}
-                  className="flex-1 flex flex-col items-center gap-2 group"
-                >
-                  <div className="relative w-full flex justify-center">
-                    <div
-                      className="w-full max-w-12 rounded-t-xl bg-linear-to-t from-[#1565C0] to-[#3b6fd8] transition-all duration-500 group-hover:opacity-90 group-hover:scale-y-105 origin-bottom"
-                      style={{
-                        height: `${(item.nilai / maxNilai) * 200}px`,
-                      }}
-                      title={`${item.bulan}: ${item.nilai}%`}
-                    />
-                  </div>
-                  <span className="text-xs font-inter-semibold text-slate-600">
-                    {item.bulan}
-                  </span>
+
+
+        <div className="
+          mt-8
+          rounded-3xl
+          border
+          border-slate-200
+          bg-slate-50
+          p-6
+        ">
+
+
+          <p className="
+            text-sm
+            uppercase
+            tracking-[0.2em]
+            text-slate-500
+          ">
+            Grafik Pendapatan (6 Bulan)
+          </p>
+
+
+
+
+          <div className="
+            mt-8
+            h-72
+            flex
+            items-end
+            justify-between
+            gap-5
+            px-3
+          ">
+
+
+            {monthlyData.map((item)=>(
+
+              <div
+                key={item.bulan}
+                className="
+                  flex-1
+                  flex
+                  flex-col
+                  items-center
+                  gap-3
+                  group
+                "
+              >
+
+
+                <div className="
+                  relative
+                  w-full
+                  flex
+                  justify-center
+                ">
+
+
+                  <div
+
+                    className="
+                      w-full
+                      max-w-14
+                      rounded-t-xl
+                      bg-gradient-to-t
+                      from-[#1565C0]
+                      to-[#3b82f6]
+                      transition-all
+                      duration-500
+                      group-hover:scale-y-105
+                      origin-bottom
+                    "
+
+                    style={{
+                      height:`${
+                        (item.nilai / maxNilai) * 220
+                      }px`
+                    }}
+
+                  />
+
+
                 </div>
-              ))}
-            </div>
+
+
+
+                <span className="
+                  text-xs
+                  font-semibold
+                  text-slate-600
+                ">
+                  {item.bulan}
+                </span>
+
+
+              </div>
+
+            ))}
+
+
           </div>
+
+
         </div>
+
+
       </div>
+
+
+
     </div>
   );
 }
